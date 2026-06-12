@@ -8,9 +8,10 @@ import { InteractiveShredder } from "./components/InteractiveShredder";
 import { Gallery } from "./components/Gallery";
 import { TrailerModal } from "./components/TrailerModal";
 import { WishlistModal } from "./components/WishlistModal";
-import { AdminDashboard } from "./components/AdminDashboard";
-import { LoginWrapper } from "./components/LoginWrapper";
 import { SoloDevCorner } from "./components/SoloDevCorner";
+
+const LoginWrapper = React.lazy(() => import("./components/LoginWrapper").then(m => ({ default: m.LoginWrapper })));
+const AdminDashboard = React.lazy(() => import("./components/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
 import { MessageSquare, Twitter, Youtube, Sparkles, CheckCircle2, Gift, ShieldAlert } from "lucide-react";
 import { useUIAudio } from "./hooks/useUIAudio";
 import { motion } from "motion/react";
@@ -125,16 +126,22 @@ export default function App() {
       {isAdminPath ? (
         /* Hidden Admin View Mode with Mock Auth */
         <main className="flex-grow">
-          <LoginWrapper>
-            <AdminDashboard onBackToLanding={() => {
-              if (window.location.pathname === "/dashboard") {
-                window.history.pushState({}, "", "/");
-                window.dispatchEvent(new Event("popstate"));
-              } else {
-                window.location.hash = "";
-              }
-            }} />
-          </LoginWrapper>
+          <React.Suspense fallback={
+            <div className="min-h-screen bg-void flex items-center justify-center p-6 text-zinc-300 font-mono font-bold tracking-widest uppercase">
+              <div className="animate-pulse">INITIALIZING SECURE CONNECTION...</div>
+            </div>
+          }>
+            <LoginWrapper>
+              <AdminDashboard onBackToLanding={() => {
+                if (window.location.pathname === "/dashboard") {
+                  window.history.pushState({}, "", "/");
+                  window.dispatchEvent(new Event("popstate"));
+                } else {
+                  window.location.hash = "";
+                }
+              }} />
+            </LoginWrapper>
+          </React.Suspense>
         </main>
       ) : (
         /* Standard Marketing Funnel Path representing gamers' discovery patterns */
