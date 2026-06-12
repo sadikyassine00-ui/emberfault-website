@@ -1,0 +1,70 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the application",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin"] }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "UserStats": {
+      "title": "UserStats",
+      "description": "Live metrics and statistics of user shredding blocks",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "blocksBuilt": { "type": "number" },
+        "blocksDestroyed": { "type": "number" },
+        "particlesShredded": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["userId", "blocksBuilt", "blocksDestroyed", "particlesShredded", "updatedAt"]
+    },
+    "Lead": {
+      "title": "Lead",
+      "description": "Alpha Drop Signups",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "date": { "type": "string" },
+        "source": { "type": "string" },
+        "platform": { "type": "string" }
+      },
+      "required": ["email", "date", "source", "platform"]
+    },
+    "Visit": {
+      "title": "Visit",
+      "description": "Anonymous Site Visits",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "platform": { "type": "string" },
+        "userAgent": { "type": "string" }
+      },
+      "required": ["date", "platform", "userAgent"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profile data"
+    },
+    "stats/{userId}": {
+      "schema": { "$ref": "#/entities/UserStats" },
+      "description": "User statistics"
+    },
+    "leads/{leadId}": {
+      "schema": { "$ref": "#/entities/Lead" },
+      "description": "Signup forms"
+    },
+    "visits/{visitId}": {
+      "schema": { "$ref": "#/entities/Visit" },
+      "description": "Site visits"
+    }
+  }
+}
