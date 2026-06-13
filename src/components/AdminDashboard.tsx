@@ -4,6 +4,7 @@ import { useUIAudio } from "../hooks/useUIAudio";
 import { useAuth } from "../lib/contexts/AuthContext";
 import { collection, getDocs, doc, deleteDoc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
+import { ImageLoader } from "./ImageLoader";
 
 interface LeadRecord {
   id: string;
@@ -565,8 +566,15 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
                {galleryImages.map((img, i) => (
                  <div key={i} className="relative aspect-[16/10] bg-[#0d0d10] border border-neutral-800 rounded-xs group overflow-hidden flex flex-col items-center justify-center text-center">
                     {img.url ? (
-                      <img src={img.url} alt={img.title} className="w-full h-full object-cover" />
-                    ) : (
+                       <ImageLoader
+                         src={img.url}
+                         alt={img.title || "Gallery preview"}
+                         loading="lazy"
+                         decoding="async"
+                         theme={img.category === "Combat" ? "purple" : img.category === "Destruction" ? "amber" : "gold"}
+                         containerClassName="border-none bg-transparent rounded-none"
+                       />
+                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-zinc-900">
                         <span className="font-mono text-[9px] text-zinc-500 uppercase px-1">Procedural: {img.proceduralId}</span>
                       </div>

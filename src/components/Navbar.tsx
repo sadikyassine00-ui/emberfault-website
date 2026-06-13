@@ -28,6 +28,7 @@ export function Navbar({ onWishlistClick }: NavbarProps) {
           <img 
             src="/logo.png" 
             alt="Emberfault Logo" 
+            decoding="async"
             className="h-full w-auto object-contain transition-all duration-300 group-hover:scale-105 group-hover:brightness-110 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]" 
           />
         </a>

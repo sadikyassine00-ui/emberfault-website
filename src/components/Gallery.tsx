@@ -4,6 +4,7 @@ import { useUIAudio } from "../hooks/useUIAudio";
 import { motion } from "motion/react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
+import { ImageLoader } from "./ImageLoader";
 
 interface MediaItem {
   id: string;
@@ -195,7 +196,14 @@ export function Gallery() {
       description: img.description || "A custom image uploaded to the sandbox.",
       proceduralVisual: (
         <div className="w-full h-full bg-[#0d0d10] relative flex items-center justify-center overflow-hidden border border-neutral-900">
-           <img src={img.url} alt={`Custom upload ${index}`} className="w-full h-full object-cover" />
+          <ImageLoader
+            src={img.url}
+            alt={img.title || `Custom upload ${index}`}
+            loading="lazy"
+            decoding="async"
+            theme={img.category === "Combat" ? "purple" : img.category === "Destruction" ? "amber" : "gold"}
+            containerClassName="border-none bg-transparent rounded-none"
+          />
         </div>
       )
     };

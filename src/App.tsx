@@ -318,6 +318,8 @@ export default function App() {
             <img
               src="/logo.png"
               alt="Emberfault Logo"
+              loading="lazy"
+              decoding="async"
               className="h-6 w-auto object-contain opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-300"
             />
           </div>

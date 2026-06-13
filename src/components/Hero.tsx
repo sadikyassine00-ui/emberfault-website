@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { SuccessModal } from "./SuccessModal";
 import { collection, addDoc, doc, getDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
+import { ImageLoader } from "./ImageLoader";
 
 function FloatingSkull({ initialDelay }: { initialDelay: number }) {
   const { playClick, playHover } = useUIAudio();
@@ -309,10 +310,14 @@ export function Hero({ onWatchTrailer, onJoinAlpha }: HeroProps) {
             className="w-full order-3 md:order-2 relative rounded-sm overflow-hidden border border-neutral-800 shadow-[0_0_30px_rgba(157,78,221,0.1)] group max-h-[35vh] md:max-h-[60vh] flex items-center justify-center pointer-events-auto"
           >
             <div className="absolute inset-0 bg-gradient-to-tr from-[#070709]/40 via-transparent to-swarm-purple/10 z-10 pointer-events-none mix-blend-overlay" />
-            <img
+            <ImageLoader
               src={heroMediaUrl}
               alt="Emberfault Pre-alpha capture"
-              className="w-full h-full object-cover scale-100 group-hover:scale-105 transition-transform duration-700"
+              loading="eager"
+              decoding="async"
+              theme="purple"
+              containerClassName="border-none bg-transparent rounded-none"
+              className="scale-100 group-hover:scale-105 transition-transform duration-700"
             />
             {/* Edge fading to blend seamlessly */}
             <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#070709] via-[#070709]/50 to-transparent z-10 pointer-events-none" />
