@@ -15,8 +15,8 @@ const AdminDashboard = React.lazy(() => import("./components/AdminDashboard").th
 import { MessageSquare, Twitter, Youtube, Sparkles, CheckCircle2, Gift, ShieldAlert } from "lucide-react";
 import { useUIAudio } from "./hooks/useUIAudio";
 import { motion } from "motion/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Analytics } from "@vercel/analytics/react";
 
 
 export default function App() {
