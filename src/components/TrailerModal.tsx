@@ -1,6 +1,8 @@
 import { motion, AnimatePresence } from "motion/react";
 import { X, Play, Volume2, ShieldAlert, Zap } from "lucide-react";
 import { useState, useEffect, ReactNode } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../lib/firebase";
 
 interface TrailerModalProps {
   isOpen: boolean;
@@ -13,11 +15,25 @@ export function TrailerModal({ isOpen, onClose }: TrailerModalProps) {
   const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    const storedUrl = localStorage.getItem("voxel-hearth-trailer");
-    if (storedUrl) {
-      setTrailerUrl(storedUrl);
-    }
-  }, []);
+    if (!isOpen) return;
+    const fetchTrailer = async () => {
+      try {
+        const docRef = doc(db, "config", "landing");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists() && docSnap.data().trailerUrl) {
+          setTrailerUrl(docSnap.data().trailerUrl);
+        } else {
+          const storedUrl = localStorage.getItem("voxel-hearth-trailer");
+          if (storedUrl) setTrailerUrl(storedUrl);
+        }
+      } catch (e) {
+        console.error("Firestore read error, falling back to localStorage", e);
+        const storedUrl = localStorage.getItem("voxel-hearth-trailer");
+        if (storedUrl) setTrailerUrl(storedUrl);
+      }
+    };
+    fetchTrailer();
+  }, [isOpen]);
 
   // Animate a simple gameplay ASCII/Block simulation inside the player
   useEffect(() => {

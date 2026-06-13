@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Download, Search, RefreshCw, Layers, Mail, Calendar, Server, Trash2, ArrowLeft, TrendingUp, Users, CheckSquare, Edit2, LogOut, Eye } from "lucide-react";
 import { useUIAudio } from "../hooks/useUIAudio";
 import { useAuth } from "../lib/contexts/AuthContext";
-import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, doc, deleteDoc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
 interface LeadRecord {
@@ -60,7 +60,7 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
     description: ""
   });
 
-  // Load and seed local storage records
+  // Load and seed local storage records and Firestore config
   const loadRecords = async () => {
     try {
       const snapshot = await getDocs(collection(db, "leads"));
@@ -74,24 +74,54 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
       const visitsSnap = await getDocs(collection(db, "visits"));
       setVisitorCount(visitsSnap.docs.length);
 
-      const storedTrailer = localStorage.getItem("voxel-hearth-trailer");
-      if (storedTrailer) setTrailerUrl(storedTrailer);
+      // Fetch dynamic configuration from Firestore
+      const docRef = doc(db, "config", "landing");
+      const docSnap = await getDoc(docRef);
       
-      const storedHeroImage = localStorage.getItem("voxel-hearth-hero-image");
-      if (storedHeroImage) setHeroImageUrl(storedHeroImage);
-      
-      const storedGallery = localStorage.getItem("voxel-hearth-gallery-v2");
-      if (storedGallery) {
-        setGalleryImages(JSON.parse(storedGallery));
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data.trailerUrl) setTrailerUrl(data.trailerUrl);
+        if (data.heroImageUrl) setHeroImageUrl(data.heroImageUrl);
+        if (data.gallery) setGalleryImages(data.gallery);
       } else {
-        localStorage.setItem("voxel-hearth-gallery-v2", JSON.stringify(SEED_GALLERY));
-        setGalleryImages(SEED_GALLERY);
+        // Fallback to localStorage
+        const storedTrailer = localStorage.getItem("voxel-hearth-trailer");
+        if (storedTrailer) setTrailerUrl(storedTrailer);
+        
+        const storedHeroImage = localStorage.getItem("voxel-hearth-hero-image");
+        if (storedHeroImage) setHeroImageUrl(storedHeroImage);
+        
+        const storedGallery = localStorage.getItem("voxel-hearth-gallery-v2");
+        if (storedGallery) {
+          setGalleryImages(JSON.parse(storedGallery));
+        } else {
+          localStorage.setItem("voxel-hearth-gallery-v2", JSON.stringify(SEED_GALLERY));
+          setGalleryImages(SEED_GALLERY);
+        }
       }
       
     } catch (err) {
       console.error("Could not read database", err);
-      // Fallback to empty
       setRecords([]);
+    }
+  };
+
+  const saveConfigToFirestore = async (heroUrl: string, trailer: string, gallery: any[]) => {
+    try {
+      const docRef = doc(db, "config", "landing");
+      await setDoc(docRef, {
+        heroImageUrl: heroUrl,
+        trailerUrl: trailer,
+        gallery: gallery.map(({ id, proceduralId, title, subtitle, category, description, url }) => {
+          const item: any = { id, title, subtitle, category, description };
+          if (proceduralId) item.proceduralId = proceduralId;
+          if (url) item.url = url;
+          return item;
+        })
+      }, { merge: true });
+    } catch (err) {
+      console.error("Failed to save config to Firestore", err);
+      showNotice("Database sync error (saved locally only).");
     }
   };
 
@@ -156,40 +186,49 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
     }
   };
 
-  const handleResetToSeeds = () => {
+  const handleResetToSeeds = async () => {
     playClick();
     try {
       localStorage.setItem("voxel-hearth-emails", JSON.stringify(SEED_RECORDS));
       setRecords(SEED_RECORDS);
       localStorage.setItem("voxel-hearth-gallery-v2", JSON.stringify(SEED_GALLERY));
       setGalleryImages(SEED_GALLERY);
+      
+      localStorage.removeItem("voxel-hearth-hero-image");
+      localStorage.removeItem("voxel-hearth-trailer");
+      setHeroImageUrl("");
+      setTrailerUrl("");
+
+      await saveConfigToFirestore("", "", SEED_GALLERY);
       showNotice("Database seeded back to template leads and gallery.");
     } catch (err) {
       console.error(err);
     }
   };
 
-  const handleSaveTrailer = () => {
+  const handleSaveTrailer = async () => {
     playClick();
     if (!trailerUrl) {
       localStorage.removeItem("voxel-hearth-trailer");
     } else {
       localStorage.setItem("voxel-hearth-trailer", trailerUrl);
     }
+    await saveConfigToFirestore(heroImageUrl, trailerUrl, galleryImages);
     showNotice("Trailer configuration updated.");
   };
 
-  const handleSaveHeroImage = () => {
+  const handleSaveHeroImage = async () => {
     playClick();
     if (!heroImageUrl) {
       localStorage.removeItem("voxel-hearth-hero-image");
     } else {
       localStorage.setItem("voxel-hearth-hero-image", heroImageUrl);
     }
+    await saveConfigToFirestore(heroImageUrl, trailerUrl, galleryImages);
     showNotice("Hero media configuration updated.");
   };
 
-  const handleAddImage = () => {
+  const handleAddImage = async () => {
     playClick();
     if (!newImageForm.url.trim()) return;
     try {
@@ -197,6 +236,7 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
       setGalleryImages(updated);
       localStorage.setItem("voxel-hearth-gallery-v2", JSON.stringify(updated));
       setNewImageForm({ url: "", title: "", subtitle: "", description: "" });
+      await saveConfigToFirestore(heroImageUrl, trailerUrl, updated);
       showNotice("Image added to gallery.");
     } catch (err) {
       console.error(err);
@@ -209,7 +249,7 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
     setNewImageForm(galleryImages[index]);
   };
 
-  const handleUpdateImage = () => {
+  const handleUpdateImage = async () => {
     playClick();
     if (!newImageForm.url.trim() || editingImageIndex === null) return;
     try {
@@ -219,6 +259,7 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
       localStorage.setItem("voxel-hearth-gallery-v2", JSON.stringify(updated));
       setNewImageForm({ url: "", title: "", subtitle: "", description: "" });
       setEditingImageIndex(null);
+      await saveConfigToFirestore(heroImageUrl, trailerUrl, updated);
       showNotice("Image updated in gallery.");
     } catch (err) {
       console.error(err);
@@ -231,13 +272,14 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
     setEditingImageIndex(null);
   };
 
-  const handleDeleteImage = (index: number) => {
+  const handleDeleteImage = async (index: number) => {
     playClick();
     try {
       const updated = [...galleryImages];
       updated.splice(index, 1);
       setGalleryImages(updated);
       localStorage.setItem("voxel-hearth-gallery-v2", JSON.stringify(updated));
+      await saveConfigToFirestore(heroImageUrl, trailerUrl, updated);
       showNotice("Image removed from gallery.");
     } catch (err) {
       console.error(err);

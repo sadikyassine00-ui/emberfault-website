@@ -13,7 +13,7 @@ import {
 import { useUIAudio } from "../hooks/useUIAudio";
 import { motion, AnimatePresence } from "motion/react";
 import { SuccessModal } from "./SuccessModal";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, doc, getDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
 function FloatingSkull({ initialDelay }: { initialDelay: number }) {
@@ -116,10 +116,23 @@ export function Hero({ onWatchTrailer, onJoinAlpha }: HeroProps) {
   const [heroMediaUrl, setHeroMediaUrl] = useState("");
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("voxel-hearth-hero-image");
-      if (stored) setHeroMediaUrl(stored);
-    } catch (e) {}
+    const fetchHeroMedia = async () => {
+      try {
+        const docRef = doc(db, "config", "landing");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists() && docSnap.data().heroImageUrl) {
+          setHeroMediaUrl(docSnap.data().heroImageUrl);
+        } else {
+          const stored = localStorage.getItem("voxel-hearth-hero-image");
+          if (stored) setHeroMediaUrl(stored);
+        }
+      } catch (e) {
+        console.error("Firestore read error, falling back to localStorage", e);
+        const stored = localStorage.getItem("voxel-hearth-hero-image");
+        if (stored) setHeroMediaUrl(stored);
+      }
+    };
+    fetchHeroMedia();
   }, []);
 
   const handleSubmit = async (e: FormEvent) => {

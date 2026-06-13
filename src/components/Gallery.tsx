@@ -2,6 +2,8 @@ import { useState, useEffect, ReactNode } from "react";
 import { Maximize2, Zap, Compass, Flame, ShieldAlert, Sparkles, X, Swords, Star } from "lucide-react";
 import { useUIAudio } from "../hooks/useUIAudio";
 import { motion } from "motion/react";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../lib/firebase";
 
 interface MediaItem {
   id: string;
@@ -20,23 +22,41 @@ export function Gallery() {
   const { playHover, playClick } = useUIAudio();
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("voxel-hearth-gallery-v2");
-      if (stored) {
-        setCustomImages(JSON.parse(stored));
-      } else {
-        const seedData = [
-          { id: "seed-1", proceduralId: "screen-1", title: "The Core Furnace", subtitle: "Heart of the Cavern", category: "Atmosphere", description: "Secure and defend the radiant central hearth. This ancient gold core pulses warmth and illumination across the bedrock corridors, serving as the ultimate line of defense against the shadow-dwelling swarms.", url: "" },
-          { id: "seed-2", proceduralId: "screen-2", title: "Bedrock Cataclysm", subtitle: "Tactical Cave-ins", category: "Destruction", description: "Demolish unstable cavern support beams to trigger a devastating, physical landslide. Use the falling stone blocks to crush high-density crawler packs or build makeshift blockades.", url: "" },
-          { id: "seed-3", proceduralId: "screen-3", title: "Horde Containment", subtitle: "Funneling the Terror", category: "Combat", description: "When the dynamic danger scales to dangerous heights, force thousands of rushing enemies through custom-carved narrow tunnels of death. Maximize explosive payload value.", url: "" },
-          { id: "seed-4", proceduralId: "screen-4", title: "Prism Burst Fire", subtitle: "Banish the Shadows", category: "Combat", description: "Discharge luminous golden spell strikes directly into the cavernous void. Every ray of energy illuminates dark rock layers and exposes creeping flankers before they strike from above.", url: "" },
-          { id: "seed-5", proceduralId: "screen-5", title: "Chipping Outposts", subtitle: "Cavalry Trenches", category: "Destruction", description: "Chisel protective trench fortifications in strategic bottlenecks. Reinforce stone block borders with active defense units, allowing you to sustain gunfire on waves of enemies.", url: "" },
-          { id: "seed-6", proceduralId: "screen-6", title: "Luminous Shrines", subtitle: "Mysterious Altars", category: "Atmosphere", description: "Locate golden glowing monuments nested deep within the obsidian stone tunnels. Activate these radiant monoliths to trigger heavy spell powers and massive area-of-effect flash attacks.", url: "" }
-        ];
-        localStorage.setItem("voxel-hearth-gallery-v2", JSON.stringify(seedData));
-        setCustomImages(seedData);
+    const fetchGallery = async () => {
+      const seedData = [
+        { id: "seed-1", proceduralId: "screen-1", title: "The Core Furnace", subtitle: "Heart of the Cavern", category: "Atmosphere", description: "Secure and defend the radiant central hearth. This ancient gold core pulses warmth and illumination across the bedrock corridors, serving as the ultimate line of defense against the shadow-dwelling swarms.", url: "" },
+        { id: "seed-2", proceduralId: "screen-2", title: "Bedrock Cataclysm", subtitle: "Tactical Cave-ins", category: "Destruction", description: "Demolish unstable cavern support beams to trigger a devastating, physical landslide. Use the falling stone blocks to crush high-density crawler packs or build makeshift blockades.", url: "" },
+        { id: "seed-3", proceduralId: "screen-3", title: "Horde Containment", subtitle: "Funneling the Terror", category: "Combat", description: "When the dynamic danger scales to dangerous heights, force thousands of rushing enemies through custom-carved narrow tunnels of death. Maximize explosive payload value.", url: "" },
+        { id: "seed-4", proceduralId: "screen-4", title: "Prism Burst Fire", subtitle: "Banish the Shadows", category: "Combat", description: "Discharge luminous golden spell strikes directly into the cavernous void. Every ray of energy illuminates dark rock layers and exposes creeping flankers before they strike from above.", url: "" },
+        { id: "seed-5", proceduralId: "screen-5", title: "Chipping Outposts", subtitle: "Cavalry Trenches", category: "Destruction", description: "Chisel protective trench fortifications in strategic bottlenecks. Reinforce stone block borders with active defense units, allowing you to sustain gunfire on waves of enemies.", url: "" },
+        { id: "seed-6", proceduralId: "screen-6", title: "Luminous Shrines", subtitle: "Mysterious Altars", category: "Atmosphere", description: "Locate golden glowing monuments nested deep within the obsidian stone tunnels. Activate these radiant monoliths to trigger heavy spell powers and massive area-of-effect flash attacks.", url: "" }
+      ];
+
+      try {
+        const docRef = doc(db, "config", "landing");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists() && docSnap.data().gallery) {
+          setCustomImages(docSnap.data().gallery);
+        } else {
+          const stored = localStorage.getItem("voxel-hearth-gallery-v2");
+          if (stored) {
+            setCustomImages(JSON.parse(stored));
+          } else {
+            localStorage.setItem("voxel-hearth-gallery-v2", JSON.stringify(seedData));
+            setCustomImages(seedData);
+          }
+        }
+      } catch (err) {
+        console.error("Firestore read error, falling back to localStorage", err);
+        const stored = localStorage.getItem("voxel-hearth-gallery-v2");
+        if (stored) {
+          setCustomImages(JSON.parse(stored));
+        } else {
+          setCustomImages(seedData);
+        }
       }
-    } catch(err) {}
+    };
+    fetchGallery();
   }, []);
 
   // Map the procedurals into a registry so we can merge them by proceduralId

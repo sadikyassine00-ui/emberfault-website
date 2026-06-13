@@ -75,5 +75,10 @@ service cloud.firestore {
       allow create: if true;
       allow read: if isAdminEmail();
     }
+
+    match /config/{configId} {
+      allow read: if true;
+      allow write: if isAdminEmail();
+    }
   }
 }
