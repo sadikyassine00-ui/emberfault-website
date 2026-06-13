@@ -15,6 +15,9 @@ const AdminDashboard = React.lazy(() => import("./components/AdminDashboard").th
 import { MessageSquare, Twitter, Youtube, Sparkles, CheckCircle2, Gift, ShieldAlert } from "lucide-react";
 import { useUIAudio } from "./hooks/useUIAudio";
 import { motion } from "motion/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
+
 
 export default function App() {
   const { playHover, playClick } = useUIAudio();
@@ -34,9 +37,9 @@ export default function App() {
       try {
         if (!sessionStorage.getItem('voxel_hearth_visited')) {
           await addDoc(collection(db, "visits"), {
-             date: new Date().toISOString(),
-             platform: navigator.platform || "Unknown",
-             userAgent: navigator.userAgent
+            date: new Date().toISOString(),
+            platform: navigator.platform || "Unknown",
+            userAgent: navigator.userAgent
           });
           sessionStorage.setItem('voxel_hearth_visited', 'true');
         }
@@ -56,12 +59,12 @@ export default function App() {
         setScrollProgress(progress);
       }
     };
-    
+
     const handleHashChange = () => {
       setIsAdminPath(
-        window.location.pathname === "/dashboard" || 
-        window.location.hash === "#dashboard" || 
-        window.location.hash === "#/dashboard" || 
+        window.location.pathname === "/dashboard" ||
+        window.location.hash === "#dashboard" ||
+        window.location.hash === "#/dashboard" ||
         window.location.hash === "#hq-admin-access"
       );
     };
@@ -110,17 +113,19 @@ export default function App() {
   return (
     <div className="bg-void min-h-screen text-zinc-100 flex flex-col relative selection:bg-hearth-gold selection:text-black">
       {/* Scroll Progress Bar at the top of viewport */}
-      <div 
+      <SpeedInsights />
+      <Analytics />
+      <div
         className="fixed top-0 left-0 h-1 bg-gradient-to-r from-hearth-gold to-hearth-amber z-50 transition-all duration-75"
         style={{ width: `${scrollProgress}%` }}
       />
 
       {/* Sticky Navigation Bar */}
-      <Navbar 
+      <Navbar
         onWishlistClick={() => {
           playClick();
           window.open('https://store.steampowered.com/', '_blank');
-        }} 
+        }}
       />
 
       {isAdminPath ? (
@@ -146,7 +151,7 @@ export default function App() {
       ) : (
         /* Standard Marketing Funnel Path representing gamers' discovery patterns */
         <main className="flex-grow flex flex-col">
-          
+
           {/* SECTION 1: HERO (THE HOOK) */}
           <Hero
             onWatchTrailer={() => {
@@ -166,7 +171,7 @@ export default function App() {
 
           {/* INTERACTIVE COMPONENT: REAL-TIME DESTRUCTIBILITY PREVIEW */}
           <section id="shredder" className="scroll-mt-24 max-w-7xl mx-auto px-6 py-16 md:py-24 w-full space-y-6 border-y border-neutral-900 bg-gradient-to-b from-void via-bedrock/25 to-void">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 40, scale: 0.95 }}
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true, margin: "-100px" }}
@@ -202,8 +207,8 @@ export default function App() {
             {/* Background geometric flare */}
             <div className="absolute inset-0 bg-[radial-gradient(#1c1917_1px,transparent_1px)] [background-size:20px_20px] opacity-40" />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-[600px] h-[350px] sm:h-[600px] bg-gradient-to-r from-hearth-gold/5 via-hearth-amber/5 to-transparent rounded-full filter blur-[120px] mix-blend-screen pointer-events-none z-0" />
-            
-            <motion.div 
+
+            <motion.div
               initial={{ opacity: 0, y: 40, scale: 0.95 }}
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true, margin: "-100px" }}
@@ -231,7 +236,7 @@ export default function App() {
 
               {/* Dynamic registration form (Incentive channel) */}
               {!isIncentiveSubmitted ? (
-                <form 
+                <form
                   onSubmit={handleIncentiveSubmit}
                   className="w-full max-w-md bg-bedrock border border-neutral-800 focus-within:border-hearth-gold p-1.5 rounded-sm flex flex-col sm:flex-row gap-2 shadow-2xl transition duration-300"
                 >
@@ -289,7 +294,7 @@ export default function App() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto mt-4 md:mt-0">
-              <a 
+              <a
                 href="https://discord.gg"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -307,12 +312,12 @@ export default function App() {
       {/* Simple and Clean Footer */}
       <footer className="border-t border-neutral-900 bg-[#060608] py-8">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-6">
-          
+
           {/* Logo element */}
           <div className="flex items-center gap-2">
-            <img 
-              src="/logo.png" 
-              alt="Emberfault Logo" 
+            <img
+              src="/logo.png"
+              alt="Emberfault Logo"
               className="h-6 w-auto object-contain opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-300"
             />
           </div>
