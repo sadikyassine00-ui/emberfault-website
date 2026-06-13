@@ -35,7 +35,7 @@ export function Gallery() {
       try {
         const docRef = doc(db, "config", "landing");
         const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && docSnap.data().gallery) {
+        if (docSnap.exists() && docSnap.data().gallery !== undefined) {
           setCustomImages(docSnap.data().gallery);
         } else {
           const stored = localStorage.getItem("voxel-hearth-gallery-v2");

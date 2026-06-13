@@ -120,7 +120,7 @@ export function Hero({ onWatchTrailer, onJoinAlpha }: HeroProps) {
       try {
         const docRef = doc(db, "config", "landing");
         const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && docSnap.data().heroImageUrl) {
+        if (docSnap.exists() && docSnap.data().heroImageUrl !== undefined) {
           setHeroMediaUrl(docSnap.data().heroImageUrl);
         } else {
           const stored = localStorage.getItem("voxel-hearth-hero-image");

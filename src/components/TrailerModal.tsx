@@ -20,7 +20,7 @@ export function TrailerModal({ isOpen, onClose }: TrailerModalProps) {
       try {
         const docRef = doc(db, "config", "landing");
         const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && docSnap.data().trailerUrl) {
+        if (docSnap.exists() && docSnap.data().trailerUrl !== undefined) {
           setTrailerUrl(docSnap.data().trailerUrl);
         } else {
           const storedUrl = localStorage.getItem("voxel-hearth-trailer");

@@ -112,10 +112,13 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
       await setDoc(docRef, {
         heroImageUrl: heroUrl,
         trailerUrl: trailer,
-        gallery: gallery.map(({ id, proceduralId, title, subtitle, category, description, url }) => {
-          const item: any = { id, title, subtitle, category, description };
-          if (proceduralId) item.proceduralId = proceduralId;
-          if (url) item.url = url;
+        gallery: gallery.map((gItem) => {
+          const item: any = {};
+          Object.keys(gItem).forEach(key => {
+            if (gItem[key] !== undefined) {
+              item[key] = gItem[key];
+            }
+          });
           return item;
         })
       }, { merge: true });
@@ -240,7 +243,13 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
     playClick();
     if (!newImageForm.url.trim()) return;
     try {
-      const updated = [...galleryImages, { ...newImageForm, url: newImageForm.url.trim() }];
+      const newImg = {
+        ...newImageForm,
+        url: newImageForm.url.trim(),
+        id: `custom-${Date.now()}`,
+        category: "Atmosphere"
+      };
+      const updated = [...galleryImages, newImg];
       setGalleryImages(updated);
       localStorage.setItem("voxel-hearth-gallery-v2", JSON.stringify(updated));
       setNewImageForm({ url: "", title: "", subtitle: "", description: "" });
