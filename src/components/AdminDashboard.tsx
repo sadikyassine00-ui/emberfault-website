@@ -108,20 +108,26 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
 
   const saveConfigToFirestore = async (heroUrl: string, trailer: string, gallery: any[]) => {
     try {
-      const docRef = doc(db, "config", "landing");
-      await setDoc(docRef, {
-        heroImageUrl: heroUrl,
-        trailerUrl: trailer,
-        gallery: gallery.map((gItem) => {
+      const payload: any = {};
+      if (heroUrl !== undefined) payload.heroImageUrl = heroUrl;
+      if (trailer !== undefined) payload.trailerUrl = trailer;
+      
+      if (gallery !== undefined) {
+        payload.gallery = gallery.map((gItem: any) => {
           const item: any = {};
-          Object.keys(gItem).forEach(key => {
-            if (gItem[key] !== undefined) {
-              item[key] = gItem[key];
-            }
-          });
+          if (gItem) {
+            Object.keys(gItem).forEach(key => {
+              if (gItem[key] !== undefined) {
+                item[key] = gItem[key];
+              }
+            });
+          }
           return item;
-        })
-      }, { merge: true });
+        });
+      }
+
+      const docRef = doc(db, "config", "landing");
+      await setDoc(docRef, payload, { merge: true });
       return true;
     } catch (err) {
       console.error("Failed to save config to Firestore", err);
