@@ -119,9 +119,11 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
           return item;
         })
       }, { merge: true });
+      return true;
     } catch (err) {
       console.error("Failed to save config to Firestore", err);
       showNotice("Database sync error (saved locally only).");
+      return false;
     }
   };
 
@@ -199,8 +201,10 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
       setHeroImageUrl("");
       setTrailerUrl("");
 
-      await saveConfigToFirestore("", "", SEED_GALLERY);
-      showNotice("Database seeded back to template leads and gallery.");
+      const success = await saveConfigToFirestore("", "", SEED_GALLERY);
+      if (success) {
+        showNotice("Database seeded back to template leads and gallery.");
+      }
     } catch (err) {
       console.error(err);
     }
@@ -213,8 +217,10 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
     } else {
       localStorage.setItem("voxel-hearth-trailer", trailerUrl);
     }
-    await saveConfigToFirestore(heroImageUrl, trailerUrl, galleryImages);
-    showNotice("Trailer configuration updated.");
+    const success = await saveConfigToFirestore(heroImageUrl, trailerUrl, galleryImages);
+    if (success) {
+      showNotice("Trailer configuration updated.");
+    }
   };
 
   const handleSaveHeroImage = async () => {
@@ -224,8 +230,10 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
     } else {
       localStorage.setItem("voxel-hearth-hero-image", heroImageUrl);
     }
-    await saveConfigToFirestore(heroImageUrl, trailerUrl, galleryImages);
-    showNotice("Hero media configuration updated.");
+    const success = await saveConfigToFirestore(heroImageUrl, trailerUrl, galleryImages);
+    if (success) {
+      showNotice("Hero media configuration updated.");
+    }
   };
 
   const handleAddImage = async () => {
@@ -236,8 +244,10 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
       setGalleryImages(updated);
       localStorage.setItem("voxel-hearth-gallery-v2", JSON.stringify(updated));
       setNewImageForm({ url: "", title: "", subtitle: "", description: "" });
-      await saveConfigToFirestore(heroImageUrl, trailerUrl, updated);
-      showNotice("Image added to gallery.");
+      const success = await saveConfigToFirestore(heroImageUrl, trailerUrl, updated);
+      if (success) {
+        showNotice("Image added to gallery.");
+      }
     } catch (err) {
       console.error(err);
     }
@@ -259,8 +269,10 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
       localStorage.setItem("voxel-hearth-gallery-v2", JSON.stringify(updated));
       setNewImageForm({ url: "", title: "", subtitle: "", description: "" });
       setEditingImageIndex(null);
-      await saveConfigToFirestore(heroImageUrl, trailerUrl, updated);
-      showNotice("Image updated in gallery.");
+      const success = await saveConfigToFirestore(heroImageUrl, trailerUrl, updated);
+      if (success) {
+        showNotice("Image updated in gallery.");
+      }
     } catch (err) {
       console.error(err);
     }
@@ -279,8 +291,10 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
       updated.splice(index, 1);
       setGalleryImages(updated);
       localStorage.setItem("voxel-hearth-gallery-v2", JSON.stringify(updated));
-      await saveConfigToFirestore(heroImageUrl, trailerUrl, updated);
-      showNotice("Image removed from gallery.");
+      const success = await saveConfigToFirestore(heroImageUrl, trailerUrl, updated);
+      if (success) {
+        showNotice("Image removed from gallery.");
+      }
     } catch (err) {
       console.error(err);
     }
