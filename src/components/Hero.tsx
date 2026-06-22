@@ -315,6 +315,7 @@ export function Hero({ onWatchTrailer, onJoinAlpha }: HeroProps) {
               alt="Emberfault Pre-alpha capture"
               loading="eager"
               decoding="async"
+              fetchPriority="high"
               theme="purple"
               containerClassName="border-none bg-transparent rounded-none"
               className="scale-100 group-hover:scale-105 transition-transform duration-700"

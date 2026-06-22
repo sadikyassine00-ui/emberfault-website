@@ -10,6 +10,9 @@ interface ImageLoaderProps {
   loading?: "lazy" | "eager";
   decoding?: "async" | "sync" | "auto";
   theme?: "gold" | "purple" | "amber";
+  fetchPriority?: "high" | "low" | "auto";
+  width?: number;
+  height?: number;
 }
 
 export function ImageLoader({
@@ -20,6 +23,9 @@ export function ImageLoader({
   loading = "lazy",
   decoding = "async",
   theme = "gold",
+  fetchPriority,
+  width,
+  height,
 }: ImageLoaderProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -103,6 +109,9 @@ export function ImageLoader({
         alt={alt}
         loading={loading}
         decoding={decoding}
+        {...(fetchPriority ? { fetchPriority } : {})}
+        {...(width ? { width } : {})}
+        {...(height ? { height } : {})}
         onLoad={() => setIsLoaded(true)}
         onError={() => setHasError(true)}
         className={`w-full h-full object-cover scale-100 transition-all duration-700 ease-out ${
@@ -112,3 +121,4 @@ export function ImageLoader({
     </div>
   );
 }
+

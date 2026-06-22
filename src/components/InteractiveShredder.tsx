@@ -22,7 +22,7 @@ export function InteractiveShredder() {
   const particlesRef = useRef<Particle[]>([]);
   const isMouseDownRef = useRef<boolean>(false);
   const mousePosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const embersRef = useRef<{x: number; y: number; speed: number; size: number; alpha: number}[]>(Array.from({ length: 40 }).map(() => ({
+  const embersRef = useRef<{x: number; y: number; speed: number; size: number; alpha: number}[]>(Array.from({ length: 24 }).map(() => ({
     x: Math.random() * 800,
     y: Math.random() * 600,
     speed: Math.random() * 0.5 + 0.1,
@@ -170,28 +170,33 @@ export function InteractiveShredder() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // Pre-render static background grid to offscreen canvas (drawn once, blit every frame)
+    const bgCanvas = document.createElement("canvas");
+    bgCanvas.width = canvas.width;
+    bgCanvas.height = canvas.height;
+    const bgCtx = bgCanvas.getContext("2d")!;
+    bgCtx.fillStyle = "#0a0a0c";
+    bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+    bgCtx.strokeStyle = "rgba(63, 63, 70, 0.15)";
+    bgCtx.lineWidth = 1;
+    for (let x = 0; x < bgCanvas.width; x += 16) {
+      bgCtx.beginPath();
+      bgCtx.moveTo(x, 0);
+      bgCtx.lineTo(x, bgCanvas.height);
+      bgCtx.stroke();
+    }
+    for (let y = 0; y < bgCanvas.height; y += 16) {
+      bgCtx.beginPath();
+      bgCtx.moveTo(0, y);
+      bgCtx.lineTo(bgCanvas.width, y);
+      bgCtx.stroke();
+    }
+
     let animId: number;
 
     const render = () => {
-      // Clear with dark void color (#0a0a0c)
-      ctx.fillStyle = "#0a0a0c";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Draw faint background tech grid
-      ctx.strokeStyle = "rgba(63, 63, 70, 0.15)";
-      ctx.lineWidth = 1;
-      for (let x = 0; x < canvas.width; x += 16) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, canvas.height);
-        ctx.stroke();
-      }
-      for (let y = 0; y < canvas.height; y += 16) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
-        ctx.stroke();
-      }
+      // Blit pre-rendered background grid (single drawImage vs ~60 line draws)
+      ctx.drawImage(bgCanvas, 0, 0);
 
       // Draw floating background embers
       embersRef.current.forEach((ember) => {

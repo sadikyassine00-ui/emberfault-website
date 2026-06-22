@@ -3,8 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Emberfault is an isometric swarm action game with 100% destructible voxel terrain. Carve paths through the earth, shatter the floor beneath the horde, and weaponize physics." />
+    <meta name="theme-color" content="#0a0a0c" />
+    <meta property="og:title" content="Emberfault // High-Tension Destructible Voxel Swarm Action" />
+    <meta property="og:description" content="Isometric swarm action with 100% destructible voxel terrain. Carve, shatter, and weaponize the environment." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/logo.png" />
     <link rel="icon" type="image/png" href="/faviconFlame.png" />
     <title>Emberfault // High-Tension Destructible Voxel Swarm Action</title>
+
+    <!-- Preconnect to font origins for faster handshake -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Non-render-blocking font loading with display=swap -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" />
+
+    <!-- Preload critical above-the-fold image -->
+    <link rel="preload" as="image" href="/logo.png" />
+
     <script>
       if (typeof window !== 'undefined') {
         const originalFetch = window.fetch;

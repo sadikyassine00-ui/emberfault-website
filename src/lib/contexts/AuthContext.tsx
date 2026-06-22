@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { User, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "../firebase";
+import type { User } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db, getAuthLazy } from "../firebase";
 
 interface AuthContextType {
   user: User | null;
@@ -17,32 +17,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
-        // Create user document if it doesn't exist
-        const userRef = doc(db, "users", currentUser.uid);
-        const userSnap = await getDoc(userRef);
-        if (!userSnap.exists()) {
-          try {
-            await setDoc(userRef, {
-              uid: currentUser.uid,
-              email: currentUser.email,
-              displayName: currentUser.displayName || "Unknown Operator",
-              role: "user"
-            });
-          } catch (e) {
-            console.error("Error creating user profile", e);
+    let unsubscribe: (() => void) | undefined;
+
+    const init = async () => {
+      const auth = await getAuthLazy();
+      const { onAuthStateChanged } = await import("firebase/auth");
+      unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+        setUser(currentUser);
+        if (currentUser) {
+          // Create user document if it doesn't exist
+          const userRef = doc(db, "users", currentUser.uid);
+          const userSnap = await getDoc(userRef);
+          if (!userSnap.exists()) {
+            try {
+              await setDoc(userRef, {
+                uid: currentUser.uid,
+                email: currentUser.email,
+                displayName: currentUser.displayName || "Unknown Operator",
+                role: "user"
+              });
+            } catch (e) {
+              console.error("Error creating user profile", e);
+            }
           }
         }
-      }
-      setLoading(false);
-    });
+        setLoading(false);
+      });
+    };
 
-    return unsubscribe;
+    init();
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   const signInWithGoogle = async () => {
+    const auth = await getAuthLazy();
+    const { signInWithPopup, GoogleAuthProvider } = await import("firebase/auth");
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
@@ -52,6 +64,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
+    const auth = await getAuthLazy();
+    const { signOut } = await import("firebase/auth");
     try {
       await signOut(auth);
     } catch (error) {

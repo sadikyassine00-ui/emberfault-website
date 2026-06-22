@@ -1,22 +1,26 @@
-import React, { useState, useEffect, FormEvent } from "react";
+import React, { useState, useEffect, FormEvent, useCallback, useRef } from "react";
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "./lib/firebase";
 import { Navbar } from "./components/Navbar";
 import { Hero } from "./components/Hero";
 import { Features } from "./components/Features";
-import { InteractiveShredder } from "./components/InteractiveShredder";
-import { Gallery } from "./components/Gallery";
-import { TrailerModal } from "./components/TrailerModal";
-import { WishlistModal } from "./components/WishlistModal";
-import { SoloDevCorner } from "./components/SoloDevCorner";
-
-const LoginWrapper = React.lazy(() => import("./components/LoginWrapper").then(m => ({ default: m.LoginWrapper })));
-const AdminDashboard = React.lazy(() => import("./components/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
 import { MessageSquare, Twitter, Youtube, Sparkles, CheckCircle2, Gift, ShieldAlert } from "lucide-react";
 import { useUIAudio } from "./hooks/useUIAudio";
 import { motion } from "motion/react";
-import { SpeedInsights } from "@vercel/speed-insights/react";
-import { Analytics } from "@vercel/analytics/react";
+
+// Lazy-load below-the-fold components to reduce initial bundle
+const Gallery = React.lazy(() => import("./components/Gallery").then(m => ({ default: m.Gallery })));
+const InteractiveShredder = React.lazy(() => import("./components/InteractiveShredder").then(m => ({ default: m.InteractiveShredder })));
+const SoloDevCorner = React.lazy(() => import("./components/SoloDevCorner").then(m => ({ default: m.SoloDevCorner })));
+const TrailerModal = React.lazy(() => import("./components/TrailerModal").then(m => ({ default: m.TrailerModal })));
+const WishlistModal = React.lazy(() => import("./components/WishlistModal").then(m => ({ default: m.WishlistModal })));
+
+// Lazy-load third-party analytics
+const SpeedInsights = React.lazy(() => import("@vercel/speed-insights/react").then(m => ({ default: m.SpeedInsights })));
+const Analytics = React.lazy(() => import("@vercel/analytics/react").then(m => ({ default: m.Analytics })));
+
+const LoginWrapper = React.lazy(() => import("./components/LoginWrapper").then(m => ({ default: m.LoginWrapper })));
+const AdminDashboard = React.lazy(() => import("./components/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
 
 
 export default function App() {
@@ -50,14 +54,20 @@ export default function App() {
     recordVisit();
   }, []);
 
-  // Smooth Scroll Progress & Hash routing tracker
+  // Smooth Scroll Progress & Hash routing tracker (rAF-throttled)
   useEffect(() => {
+    let rafId: number | null = null;
+
     const handleScroll = () => {
-      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-      if (scrollHeight > 0) {
-        const progress = (window.scrollY / scrollHeight) * 105;
-        setScrollProgress(progress);
-      }
+      if (rafId !== null) return; // Skip if a frame is already queued
+      rafId = requestAnimationFrame(() => {
+        const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+        if (scrollHeight > 0) {
+          const progress = (window.scrollY / scrollHeight) * 105;
+          setScrollProgress(progress);
+        }
+        rafId = null;
+      });
     };
 
     const handleHashChange = () => {
@@ -72,13 +82,14 @@ export default function App() {
     // Initial check
     handleHashChange();
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("hashchange", handleHashChange);
     window.addEventListener("popstate", handleHashChange);
     return () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("hashchange", handleHashChange);
       window.removeEventListener("popstate", handleHashChange);
+      if (rafId !== null) cancelAnimationFrame(rafId);
     };
   }, []);
 
@@ -113,8 +124,10 @@ export default function App() {
   return (
     <div className="bg-void min-h-screen text-zinc-100 flex flex-col relative selection:bg-hearth-gold selection:text-black">
       {/* Scroll Progress Bar at the top of viewport */}
-      <SpeedInsights />
-      <Analytics />
+      <React.Suspense fallback={null}>
+        <SpeedInsights />
+        <Analytics />
+      </React.Suspense>
       <div
         className="fixed top-0 left-0 h-1 bg-gradient-to-r from-hearth-gold to-hearth-amber z-50 transition-all duration-75"
         style={{ width: `${scrollProgress}%` }}
@@ -166,7 +179,9 @@ export default function App() {
 
           {/* SECTION 2: THE VISUAL GALLERY (THE PROOF) */}
           <section id="gallery" className="scroll-mt-24 max-w-7xl mx-auto px-6 py-16 md:py-24 w-full">
-            <Gallery />
+            <React.Suspense fallback={<div className="min-h-[300px]" />}>
+              <Gallery />
+            </React.Suspense>
           </section>
 
           {/* INTERACTIVE COMPONENT: REAL-TIME DESTRUCTIBILITY PREVIEW */}
@@ -189,7 +204,9 @@ export default function App() {
                 Test-drive our destruction and building math. Click or hold your cursor over the bedrock to disintegrate structural walls in real-time, or build fortresses to protect the core.
               </p>
             </motion.div>
-            <InteractiveShredder />
+            <React.Suspense fallback={<div className="min-h-[300px]" />}>
+              <InteractiveShredder />
+            </React.Suspense>
           </section>
 
           {/* SECTION 3: FEATURE HOOKS (THE PITCH) */}
@@ -199,7 +216,9 @@ export default function App() {
 
           {/* SECTION 4: THE SOLO DEV CORNER */}
           <section className="relative z-20 bg-void">
-            <SoloDevCorner />
+            <React.Suspense fallback={<div className="min-h-[150px]" />}>
+              <SoloDevCorner />
+            </React.Suspense>
           </section>
 
           {/* SECTION 5: THE FINAL CTA (THE CLOSE) */}
@@ -320,6 +339,8 @@ export default function App() {
               alt="Emberfault Logo"
               loading="lazy"
               decoding="async"
+              width={200}
+              height={50}
               className="h-6 w-auto object-contain opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-300"
             />
           </div>
@@ -369,16 +390,18 @@ export default function App() {
       </footer>
 
       {/* Overlay Modals mapping */}
-      <TrailerModal
-        isOpen={isTrailerOpen}
-        onClose={() => setIsTrailerOpen(false)}
-      />
+      <React.Suspense fallback={null}>
+        <TrailerModal
+          isOpen={isTrailerOpen}
+          onClose={() => setIsTrailerOpen(false)}
+        />
 
-      <WishlistModal
-        isOpen={modalType !== null}
-        type={modalType || "wishlist"}
-        onClose={() => setModalType(null)}
-      />
+        <WishlistModal
+          isOpen={modalType !== null}
+          type={modalType || "wishlist"}
+          onClose={() => setModalType(null)}
+        />
+      </React.Suspense>
     </div>
   );
 }
