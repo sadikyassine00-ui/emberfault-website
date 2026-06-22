@@ -14,7 +14,9 @@
         "authorizedRedirectUris": [
           "http://localhost",
           "http://localhost:3000",
-          "https://emberfault-website.vercel.app"
+          "https://emberfault-website.vercel.app",
+          "https://emberfault.com",
+          "https://www.emberfault.com"
         ]
       }
     }

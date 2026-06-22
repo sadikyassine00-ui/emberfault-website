@@ -10,7 +10,7 @@
   --color-bedrock: #18181c;
   --color-hearth-gold: #ffd700;
   --color-hearth-amber: #facc15;
-  --color-swarm-purple: #9d00ff;
+  --color-swarm-purple: #c47aff; /* Lightened for WCAG contrast compliance */
 
   @keyframes voxel-shimmer {
     0% {

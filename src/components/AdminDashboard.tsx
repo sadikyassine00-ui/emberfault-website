@@ -580,10 +580,10 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
                       </div>
                     )}
                     <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                      <button onClick={() => handleEditImage(i)} className="p-1.5 bg-black/80 hover:bg-hearth-gold transition text-white hover:text-black rounded-xs">
+                      <button onClick={() => handleEditImage(i)} className="p-1.5 bg-black/80 hover:bg-hearth-gold transition text-white hover:text-black rounded-xs" aria-label="Edit image">
                         <Edit2 className="w-3 h-3" />
                       </button>
-                      <button onClick={() => handleDeleteImage(i)} className="p-1.5 bg-red-900/80 hover:bg-red-600 transition text-white rounded-xs">
+                      <button onClick={() => handleDeleteImage(i)} className="p-1.5 bg-red-900/80 hover:bg-red-600 transition text-white rounded-xs" aria-label="Delete image">
                         <Trash2 className="w-3 h-3" />
                       </button>
                     </div>

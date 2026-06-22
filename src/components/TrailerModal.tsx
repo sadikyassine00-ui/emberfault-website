@@ -152,6 +152,7 @@ export function TrailerModal({ isOpen, onClose }: TrailerModalProps) {
             <button
               onClick={onClose}
               className="p-1 px-2 text-xs font-mono border border-neutral-805 border-zinc-700 bg-void hover:bg-hearth-red hover:text-white rounded-sm transition text-zinc-400"
+              aria-label="Close trailer"
             >
               <X className="w-4 h-4" />
             </button>

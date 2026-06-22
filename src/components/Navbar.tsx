@@ -99,6 +99,7 @@ export function Navbar({ onWishlistClick }: NavbarProps) {
             }}
             onMouseEnter={playHover}
             className="p-2 border border-neutral-850 hover:border-neutral-700 bg-void rounded-sm text-zinc-300 transition"
+            aria-label="Toggle Navigation Menu"
           >
             {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>

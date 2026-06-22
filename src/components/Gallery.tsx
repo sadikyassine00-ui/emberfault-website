@@ -149,7 +149,7 @@ export function Gallery() {
             </div>
             <div className="w-8 h-6 bg-zinc-850 border border-neutral-800" />
           </div>
-          <div className="absolute top-3 left-3 bg-void/90 px-2 py-0.5 border border-neutral-850 text-[9px] font-mono text-zinc-500 uppercase tracking-widest">
+          <div className="absolute top-3 left-3 bg-void/90 px-2 py-0.5 border border-neutral-850 text-[9px] font-mono text-zinc-400 uppercase tracking-widest">
             TRENCH RADAR: RUNNING
           </div>
         </div>
@@ -164,7 +164,7 @@ export function Gallery() {
             <Swords className="w-4 h-4 text-white animate-pulse" />
           </div>
           <div className="absolute top-2 w-4 h-4 bg-[#ffd700] rounded-full filter blur-[4px] animate-bounce" />
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-void/90 px-2 py-0.5 border border-neutral-850 text-[9px] font-mono text-zinc-500 uppercase tracking-widest">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-void/90 px-2 py-0.5 border border-neutral-850 text-[9px] font-mono text-zinc-400 uppercase tracking-widest">
             ALTAR INTACT
           </div>
         </div>

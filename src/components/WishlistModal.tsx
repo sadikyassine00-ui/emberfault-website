@@ -89,6 +89,7 @@ export function WishlistModal({ isOpen, onClose, type }: WishlistModalProps) {
             <button
               onClick={onClose}
               className="p-1 text-xs font-mono border border-neutral-800 bg-void hover:bg-neutral-800 rounded-sm text-zinc-400 transition cursor-pointer"
+              aria-label="Close modal"
             >
               <X className="w-4 h-4" />
             </button>
