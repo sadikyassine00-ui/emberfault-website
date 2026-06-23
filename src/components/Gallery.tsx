@@ -249,9 +249,9 @@ export function Gallery() {
             <span className="w-3 h-3 bg-hearth-gold inline-block" />
             <span className="font-mono text-xs text-hearth-amber uppercase tracking-widest font-bold">SCREENSHOTS & MEDIA</span>
           </div>
-          <h3 className="text-3xl md:text-4xl font-display font-black tracking-tight text-white uppercase leading-none">
+          <h2 className="text-3xl md:text-4xl font-display font-black tracking-tight text-white uppercase leading-none">
             ADRENALINE CAPTURES
-          </h3>
+          </h2>
         </div>
         <p className="max-w-md text-xs text-zinc-400 font-mono leading-relaxed border-l-2 border-neutral-800 pl-4">
           Witness high-intensity destruction loops and vibrant ambient lights shining through dark subterranean pits. Expand any frame to inspect the battlefield.

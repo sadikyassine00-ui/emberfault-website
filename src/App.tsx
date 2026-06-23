@@ -1,6 +1,7 @@
 import React, { useState, useEffect, FormEvent, useCallback, useRef } from "react";
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "./lib/firebase";
+import { AuthProvider } from "./lib/contexts/AuthContext";
 import { Navbar } from "./components/Navbar";
 import { Hero } from "./components/Hero";
 import { Features } from "./components/Features";
@@ -149,16 +150,18 @@ export default function App() {
               <div className="animate-pulse">INITIALIZING SECURE CONNECTION...</div>
             </div>
           }>
-            <LoginWrapper>
-              <AdminDashboard onBackToLanding={() => {
-                if (window.location.pathname === "/dashboard") {
-                  window.history.pushState({}, "", "/");
-                  window.dispatchEvent(new Event("popstate"));
-                } else {
-                  window.location.hash = "";
-                }
-              }} />
-            </LoginWrapper>
+            <AuthProvider>
+              <LoginWrapper>
+                <AdminDashboard onBackToLanding={() => {
+                  if (window.location.pathname === "/dashboard") {
+                    window.history.pushState({}, "", "/");
+                    window.dispatchEvent(new Event("popstate"));
+                  } else {
+                    window.location.hash = "";
+                  }
+                }} />
+              </LoginWrapper>
+            </AuthProvider>
           </React.Suspense>
         </main>
       ) : (
@@ -304,9 +307,9 @@ export default function App() {
           {/* Social Community engagement footer block */}
           <section id="community" className="scroll-mt-24 max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-8 border-t border-neutral-900 w-full bg-void">
             <div className="space-y-2 text-center md:text-left">
-              <h4 className="text-2xl font-display font-black tracking-tight text-white uppercase glow-text-subtle">
+              <h2 className="text-2xl font-display font-black tracking-tight text-white uppercase glow-text-subtle">
                 Emberfault Tunnels
-              </h4>
+              </h2>
               <p className="max-w-md text-xs sm:text-sm text-zinc-500 leading-relaxed font-sans">
                 Interact directly with me, exchange customized templates, and influence weapon balancing parameters inside my closed Discord tunnels.
               </p>
