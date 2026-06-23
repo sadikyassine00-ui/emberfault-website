@@ -2,8 +2,7 @@ import { useState, FormEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Check, Mail, Gamepad, Radio, HelpCircle } from "lucide-react";
 import { WishlistSubmission } from "../types";
-import { collection, addDoc } from "firebase/firestore";
-import { db } from "../lib/firebase";
+import { getDbLazy } from "../lib/firebase";
 
 interface WishlistModalProps {
   isOpen: boolean;
@@ -36,6 +35,8 @@ export function WishlistModal({ isOpen, onClose, type }: WishlistModalProps) {
     setError("");
     
     try {
+      const { collection, addDoc } = await import("firebase/firestore");
+      const db = await getDbLazy();
       await addDoc(collection(db, "leads"), {
         email: email.trim(),
         platform: platform,

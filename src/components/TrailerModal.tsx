@@ -1,8 +1,7 @@
 import { motion, AnimatePresence } from "motion/react";
 import { X, Play, Volume2, ShieldAlert, Zap } from "lucide-react";
 import { useState, useEffect, ReactNode } from "react";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../lib/firebase";
+import { getDbLazy } from "../lib/firebase";
 
 interface TrailerModalProps {
   isOpen: boolean;
@@ -18,6 +17,8 @@ export function TrailerModal({ isOpen, onClose }: TrailerModalProps) {
     if (!isOpen) return;
     const fetchTrailer = async () => {
       try {
+        const { doc, getDoc } = await import("firebase/firestore");
+        const db = await getDbLazy();
         const docRef = doc(db, "config", "landing");
         const docSnap = await getDoc(docRef);
         if (docSnap.exists() && docSnap.data().trailerUrl !== undefined) {

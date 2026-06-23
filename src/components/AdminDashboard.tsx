@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { Download, Search, RefreshCw, Layers, Mail, Calendar, Server, Trash2, ArrowLeft, TrendingUp, Users, CheckSquare, Edit2, LogOut, Eye } from "lucide-react";
 import { useUIAudio } from "../hooks/useUIAudio";
 import { useAuth } from "../lib/contexts/AuthContext";
-import { collection, getDocs, doc, deleteDoc, setDoc, getDoc } from "firebase/firestore";
-import { db } from "../lib/firebase";
+import { getDbLazy } from "../lib/firebase";
 import { ImageLoader } from "./ImageLoader";
 
 interface LeadRecord {
@@ -64,6 +63,8 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
   // Load and seed local storage records and Firestore config
   const loadRecords = async () => {
     try {
+      const { collection, getDocs, doc, getDoc } = await import("firebase/firestore");
+      const db = await getDbLazy();
       const snapshot = await getDocs(collection(db, "leads"));
       const leads: LeadRecord[] = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -127,6 +128,8 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
         });
       }
 
+      const { doc, setDoc } = await import("firebase/firestore");
+      const db = await getDbLazy();
       const docRef = doc(db, "config", "landing");
       await setDoc(docRef, payload, { merge: true });
       return true;
@@ -188,6 +191,8 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
   const handleDeleteRecord = async (id: string) => {
     playClick();
     try {
+      const { doc, deleteDoc } = await import("firebase/firestore");
+      const db = await getDbLazy();
       await deleteDoc(doc(db, "leads", id));
       const updated = records.filter(r => r.id !== id);
       setRecords(updated);

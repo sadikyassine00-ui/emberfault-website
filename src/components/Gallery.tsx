@@ -2,8 +2,7 @@ import { useState, useEffect, ReactNode } from "react";
 import { Maximize2, Zap, Compass, Flame, ShieldAlert, Sparkles, X, Swords, Star } from "lucide-react";
 import { useUIAudio } from "../hooks/useUIAudio";
 import { motion } from "motion/react";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../lib/firebase";
+import { getDbLazy } from "../lib/firebase";
 import { ImageLoader } from "./ImageLoader";
 
 interface MediaItem {
@@ -34,6 +33,8 @@ export function Gallery() {
       ];
 
       try {
+        const { doc, getDoc } = await import("firebase/firestore");
+        const db = await getDbLazy();
         const docRef = doc(db, "config", "landing");
         const docSnap = await getDoc(docRef);
         if (docSnap.exists() && docSnap.data().gallery !== undefined) {

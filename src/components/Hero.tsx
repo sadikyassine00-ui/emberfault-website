@@ -13,8 +13,7 @@ import {
 import { useUIAudio } from "../hooks/useUIAudio";
 import { motion, AnimatePresence } from "motion/react";
 import { SuccessModal } from "./SuccessModal";
-import { collection, addDoc, doc, getDoc } from "firebase/firestore";
-import { db } from "../lib/firebase";
+import { getDbLazy } from "../lib/firebase";
 import { ImageLoader } from "./ImageLoader";
 
 function FloatingSkull({ initialDelay }: { initialDelay: number }) {
@@ -119,6 +118,8 @@ export function Hero({ onWatchTrailer, onJoinAlpha }: HeroProps) {
   useEffect(() => {
     const fetchHeroMedia = async () => {
       try {
+        const { doc, getDoc } = await import("firebase/firestore");
+        const db = await getDbLazy();
         const docRef = doc(db, "config", "landing");
         const docSnap = await getDoc(docRef);
         if (docSnap.exists() && docSnap.data().heroImageUrl !== undefined) {
@@ -147,6 +148,8 @@ export function Hero({ onWatchTrailer, onJoinAlpha }: HeroProps) {
 
     try {
       // 1. Write to official Firebase Firestore database "leads" collection
+      const { collection, addDoc } = await import("firebase/firestore");
+      const db = await getDbLazy();
       await addDoc(collection(db, "leads"), {
         email: email.trim(),
         platform: "PC // STEAM",

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, FormEvent, useCallback, useRef } from "react";
-import { collection, addDoc } from "firebase/firestore";
-import { db } from "./lib/firebase";
+import { getDbLazy } from "./lib/firebase";
 import { AuthProvider } from "./lib/contexts/AuthContext";
 import { Navbar } from "./components/Navbar";
 import { Hero } from "./components/Hero";
@@ -41,6 +40,8 @@ export default function App() {
     const recordVisit = async () => {
       try {
         if (!sessionStorage.getItem('voxel_hearth_visited')) {
+          const { collection, addDoc } = await import("firebase/firestore");
+          const db = await getDbLazy();
           await addDoc(collection(db, "visits"), {
             date: new Date().toISOString(),
             platform: navigator.platform || "Unknown",
@@ -111,6 +112,8 @@ export default function App() {
         platform: "PC // STEAM"
       };
 
+      const { collection, addDoc } = await import("firebase/firestore");
+      const db = await getDbLazy();
       await addDoc(collection(db, "leads"), newRecord);
 
       setIsIncentiveSubmitted(true);

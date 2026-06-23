@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import type { User } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db, getAuthLazy } from "../firebase";
+import { getDbLazy, getAuthLazy } from "../firebase";
 
 interface AuthContextType {
   user: User | null;
@@ -25,7 +24,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
         setUser(currentUser);
         if (currentUser) {
-          // Create user document if it doesn't exist
+          const { doc, getDoc, setDoc } = await import("firebase/firestore");
+          const db = await getDbLazy();
           const userRef = doc(db, "users", currentUser.uid);
           const userSnap = await getDoc(userRef);
           if (!userSnap.exists()) {
