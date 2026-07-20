@@ -37,5 +37,22 @@ export default async function handler(req: any, res: any) {
     }
   }
 
+  if (req.method === 'DELETE') {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).send('Unauthorized');
+      }
+      
+      const { id } = req.body;
+      if (!id) return res.status(400).json({ error: 'ID is required' });
+      
+      await sql`DELETE FROM leads WHERE id = ${id}`;
+      return res.status(200).json({ success: true });
+    } catch (e: any) {
+      return res.status(500).json({ error: e.message });
+    }
+  }
+
   return res.status(405).send('Method Not Allowed');
 }

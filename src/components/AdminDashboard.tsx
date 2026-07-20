@@ -210,9 +210,16 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
   const handleDeleteRecord = async (id: string) => {
     playClick();
     try {
-      const { doc, deleteDoc } = await import("firebase/firestore");
-      const db = await getDbLazy();
-      await deleteDoc(doc(db, "leads", id));
+      const res = await fetch('/api/leads', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer admin_token'
+        },
+        body: JSON.stringify({ id })
+      });
+      if (!res.ok) throw new Error("Failed to delete");
+      
       const updated = records.filter(r => r.id !== id);
       setRecords(updated);
       showNotice("Record removed from sandbox registry.");
@@ -306,7 +313,7 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
       setGalleryImages(updated);
       localStorage.setItem("voxel-hearth-gallery-v2", JSON.stringify(updated));
       setNewImageForm({ url: "", title: "", subtitle: "", description: "", altText: "" });
-      const success = await saveConfigToVercel(heroImageUrl, trailerUrl, updated);
+      const success = await saveConfigToVercel(heroImageUrl, heroImageAlt, trailerUrl, updated);
       if (success) {
         showNotice("Image added to gallery.");
       }
@@ -331,7 +338,7 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
       localStorage.setItem("voxel-hearth-gallery-v2", JSON.stringify(updated));
       setNewImageForm({ url: "", title: "", subtitle: "", description: "", altText: "" });
       setEditingImageIndex(null);
-      const success = await saveConfigToVercel(heroImageUrl, trailerUrl, updated);
+      const success = await saveConfigToVercel(heroImageUrl, heroImageAlt, trailerUrl, updated);
       if (success) {
         showNotice("Image updated in gallery.");
       }
@@ -353,7 +360,7 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
       updated.splice(index, 1);
       setGalleryImages(updated);
       localStorage.setItem("voxel-hearth-gallery-v2", JSON.stringify(updated));
-      const success = await saveConfigToVercel(heroImageUrl, trailerUrl, updated);
+      const success = await saveConfigToVercel(heroImageUrl, heroImageAlt, trailerUrl, updated);
       if (success) {
         showNotice("Image removed from gallery.");
       }
