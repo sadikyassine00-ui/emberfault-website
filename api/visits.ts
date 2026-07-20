@@ -1,44 +1,36 @@
 import { neon } from '@neondatabase/serverless';
 
-
-
-export default async function handler(req: Request) {
+export default async function handler(req: any, res: any) {
   const sql = neon(process.env.DATABASE_URL!);
   
   if (req.method === 'GET') {
     try {
-      const authHeader = req.headers.get('authorization');
+      const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return new Response('Unauthorized', { status: 401 });
+        return res.status(401).send('Unauthorized');
       }
       
       const visits = await sql`SELECT COUNT(*) as count FROM visits`;
-      return new Response(JSON.stringify({ count: visits[0].count }), { 
-        status: 200, 
-        headers: { 'Content-Type': 'application/json' } 
-      });
+      return res.status(200).json({ count: visits[0].count });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+      return res.status(500).json({ error: e.message });
     }
   }
 
   if (req.method === 'POST') {
     try {
-      const { path, userAgent } = await req.json();
+      const { path, userAgent } = req.body;
       
       await sql`
         INSERT INTO visits (path, user_agent)
         VALUES (${path || '/'}, ${userAgent || ''})
       `;
       
-      return new Response(JSON.stringify({ success: true }), { 
-        status: 200,
-        headers: { 'Content-Type': 'application/json' } 
-      });
+      return res.status(200).json({ success: true });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+      return res.status(500).json({ error: e.message });
     }
   }
 
-  return new Response('Method Not Allowed', { status: 405 });
+  return res.status(405).send('Method Not Allowed');
 }

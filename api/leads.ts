@@ -1,34 +1,28 @@
 import { neon } from '@neondatabase/serverless';
 
-
-
-export default async function handler(req: Request) {
+export default async function handler(req: any, res: any) {
   const sql = neon(process.env.DATABASE_URL!);
   
   if (req.method === 'GET') {
     try {
-      // Basic auth check for admin dashboard
-      const authHeader = req.headers.get('authorization');
+      const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return new Response('Unauthorized', { status: 401 });
+        return res.status(401).send('Unauthorized');
       }
       
       const leads = await sql`SELECT * FROM leads ORDER BY created_at DESC`;
-      return new Response(JSON.stringify(leads), { 
-        status: 200, 
-        headers: { 'Content-Type': 'application/json' } 
-      });
+      return res.status(200).json(leads);
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+      return res.status(500).json({ error: e.message });
     }
   }
 
   if (req.method === 'POST') {
     try {
-      const { email, source, platform } = await req.json();
+      const { email, source, platform } = req.body;
       
       if (!email) {
-        return new Response(JSON.stringify({ error: 'Email is required' }), { status: 400 });
+        return res.status(400).json({ error: 'Email is required' });
       }
       
       await sql`
@@ -37,14 +31,11 @@ export default async function handler(req: Request) {
         ON CONFLICT (email) DO NOTHING
       `;
       
-      return new Response(JSON.stringify({ success: true }), { 
-        status: 200,
-        headers: { 'Content-Type': 'application/json' } 
-      });
+      return res.status(200).json({ success: true });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+      return res.status(500).json({ error: e.message });
     }
   }
 
-  return new Response('Method Not Allowed', { status: 405 });
+  return res.status(405).send('Method Not Allowed');
 }

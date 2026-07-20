@@ -1,30 +1,25 @@
 import { neon } from '@neondatabase/serverless';
 
-
-
-export default async function handler(req: Request) {
+export default async function handler(req: any, res: any) {
   const sql = neon(process.env.DATABASE_URL!);
   
   if (req.method === 'GET') {
     try {
       const result = await sql`SELECT value FROM config WHERE key = 'landing'`;
       if (result.length > 0) {
-        return new Response(JSON.stringify(result[0].value), { 
-          status: 200, 
-          headers: { 'Content-Type': 'application/json' } 
-        });
+        return res.status(200).json(result[0].value);
       }
-      return new Response(JSON.stringify({}), { status: 404 });
+      return res.status(404).json({});
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+      return res.status(500).json({ error: e.message });
     }
   }
 
   if (req.method === 'POST') {
     try {
-      const body = await req.json();
+      const body = req.body;
       if (!body.isAdmin) {
-        return new Response('Unauthorized', { status: 401 });
+        return res.status(401).send('Unauthorized');
       }
       
       await sql`
@@ -32,14 +27,11 @@ export default async function handler(req: Request) {
         VALUES ('landing', ${JSON.stringify(body.config)})
         ON CONFLICT (key) DO UPDATE SET value = ${JSON.stringify(body.config)}, updated_at = CURRENT_TIMESTAMP
       `;
-      return new Response(JSON.stringify({ success: true }), { 
-        status: 200,
-        headers: { 'Content-Type': 'application/json' } 
-      });
+      return res.status(200).json({ success: true });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+      return res.status(500).json({ error: e.message });
     }
   }
 
-  return new Response('Method Not Allowed', { status: 405 });
+  return res.status(405).send('Method Not Allowed');
 }
