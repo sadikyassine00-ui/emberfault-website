@@ -1,8 +1,11 @@
 import { neon } from '@neondatabase/serverless';
 import { Resend } from 'resend';
-import { renderWelcomeEmail } from '../src/emails/WelcomeEmail';
+import { renderWelcomeEmail } from '../src/emails/WelcomeEmail.js';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend: any = null;
+if (process.env.RESEND_API_KEY) {
+  resend = new Resend(process.env.RESEND_API_KEY);
+}
 
 export default async function handler(req: any, res: any) {
   const sql = neon(process.env.DATABASE_URL!);
