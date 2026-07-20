@@ -45,7 +45,7 @@ export default async function handler(req: any, res: any) {
           await resend.emails.send({
             from: 'Emberfault Vanguard <hq@emberfault.com>',
             to: email,
-            subject: 'EMBERFAULT // Alpha Registration Confirmed',
+            subject: 'EMBERFAULT // Registration Confirmed',
             html: renderWelcomeEmail(email),
           });
         } catch (emailError) {
