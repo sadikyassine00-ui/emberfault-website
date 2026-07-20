@@ -27,19 +27,15 @@ export function renderWelcomeEmail(email: string): string {
 
         .header {
           background-color: #18181b;
-          padding: 32px 24px;
+          padding: 32px 24px 24px 24px;
           border-bottom: 2px solid #eab308;
           text-align: center;
         }
 
-        .header h1 {
-          margin: 0;
-          color: #ffffff;
-          font-family: 'Inter', sans-serif;
-          font-weight: 900;
-          font-size: 28px;
-          letter-spacing: 2px;
-          text-transform: uppercase;
+        .header img {
+          max-width: 250px;
+          height: auto;
+          margin-bottom: 12px;
         }
 
         .header .subtitle {
@@ -116,22 +112,22 @@ export function renderWelcomeEmail(email: string): string {
       <div class="container">
         <!-- Header -->
         <div class="header">
-          <h1>EMBERFAULT</h1>
-          <div class="subtitle">ALPHA PRE-REGISTRATION</div>
+          <img src="https://emberfault.com/logo.png" alt="EMBERFAULT" />
+          <div class="subtitle">DEVELOPMENT UPDATES</div>
         </div>
 
         <!-- Body -->
         <div class="content">
           <div class="status-box">
-            <p class="status-text">> UPLINK ESTABLISHED</p>
-            <p class="status-text" style="color: #a1a1aa; font-size: 12px; margin-top: 4px;">> TARGET IDENTIFIER: ${email}</p>
+            <p class="status-text">> RECORD ESTABLISHED</p>
+            <p class="status-text" style="color: #a1a1aa; font-size: 12px; margin-top: 4px;">> ENLISTED: ${email}</p>
           </div>
 
           <div class="message">
-            <p>Pilot,</p>
-            <p>Your coordinates have been logged into the Vanguard Network. You are officially enlisted for the upcoming <span class="highlight">Emberfault Alpha Test</span>.</p>
-            <p>The subterranean swarm activity is escalating. We are currently finalizing the extraction protocols and stabilizing the central hearths. When the tunnels open, you will be among the first to breach the surface and drop into the void.</p>
-            <p>Maintain this comms channel. We will transmit critical intelligence, deployment schedules, and your exclusive access key in the coming weeks.</p>
+            <p>Welcome to the depths,</p>
+            <p>You have successfully registered to receive updates for <span class="highlight">Emberfault</span>.</p>
+            <p>Emberfault is a grimcute action roguelike where you battle through subterranean swarms, master chaotic destruction, and rebuild the central hearths. We are pouring everything into making the combat intense and the world engaging.</p>
+            <p>Stay tuned! We'll reach out on this comms channel to send you development updates, behind-the-scenes previews, and ultimately, news on exactly when our Alpha will drop.</p>
           </div>
 
           <div class="cta-container">
@@ -147,7 +143,7 @@ export function renderWelcomeEmail(email: string): string {
 
         <!-- Footer -->
         <div class="footer">
-          <p>TRANSMISSION ORIGIN: EMBERFAULT HQ // SYSTEM CORE</p>
+          <p>TRANSMISSION ORIGIN: EMBERFAULT HQ</p>
           <p>You received this uplink because you registered your beacon at emberfault.com</p>
         </div>
       </div>
