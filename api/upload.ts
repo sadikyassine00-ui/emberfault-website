@@ -1,20 +1,21 @@
-import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
+import { handleUpload } from '@vercel/blob/client';
 
-export const config = {
-  runtime: 'edge',
-};
-
-export default async function handler(request: Request) {
-  const body = (await request.json()) as HandleUploadBody;
-
+export default async function handler(req: any, res: any) {
   try {
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+
     const jsonResponse = await handleUpload({
       body,
-      request,
+      request: req,
       onBeforeGenerateToken: async (pathname, clientPayload) => {
-        const parsedPayload = JSON.parse(clientPayload || '{}');
+        let parsedPayload = {};
+        try {
+          parsedPayload = JSON.parse(clientPayload || '{}');
+        } catch (e) {
+          // ignore
+        }
         
-        if (parsedPayload.isAdmin !== true) {
+        if ((parsedPayload as any).isAdmin !== true) {
           throw new Error('Unauthorized');
         }
 
@@ -30,14 +31,9 @@ export default async function handler(request: Request) {
       },
     });
 
-    return new Response(JSON.stringify(jsonResponse), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: (error as Error).message }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return res.status(200).json(jsonResponse);
+  } catch (error: any) {
+    // Return 400 with the error message
+    return res.status(400).json({ error: error.message || 'An error occurred' });
   }
 }
