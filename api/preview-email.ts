@@ -1,4 +1,4 @@
-import { renderWelcomeEmail } from '../src/emails/WelcomeEmail.js';
+import { renderWelcomeEmail } from './WelcomeEmail.js';
 
 export default async function handler(req: any, res: any) {
   // Only allow GET requests
