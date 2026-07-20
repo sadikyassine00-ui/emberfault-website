@@ -71,8 +71,15 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
       // Fetch leads
       const leadsRes = await fetch('/api/leads', { headers: { 'Authorization': 'Bearer admin_token' } });
       if (leadsRes.ok) {
-        const leads = await leadsRes.json();
-        setRecords(leads);
+        const leadsData = await leadsRes.json();
+        const mappedLeads = leadsData.map((l: any) => ({
+          id: l.id,
+          email: l.email,
+          date: l.created_at,
+          source: l.source,
+          platform: l.platform
+        }));
+        setRecords(mappedLeads);
       }
       
       // Fetch visits
