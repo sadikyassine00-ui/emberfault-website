@@ -1,7 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import { X, Play, Volume2, ShieldAlert, Zap } from "lucide-react";
 import { useState, useEffect, ReactNode } from "react";
-import { getDbLazy } from "../lib/firebase";
 
 interface TrailerModalProps {
   isOpen: boolean;
@@ -17,18 +16,19 @@ export function TrailerModal({ isOpen, onClose }: TrailerModalProps) {
     if (!isOpen) return;
     const fetchTrailer = async () => {
       try {
-        const { doc, getDoc } = await import("firebase/firestore");
-        const db = await getDbLazy();
-        const docRef = doc(db, "config", "landing");
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && docSnap.data().trailerUrl !== undefined) {
-          setTrailerUrl(docSnap.data().trailerUrl);
-        } else {
-          const storedUrl = localStorage.getItem("voxel-hearth-trailer");
-          if (storedUrl) setTrailerUrl(storedUrl);
+        const res = await fetch('/api/config');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.trailerUrl !== undefined) {
+            setTrailerUrl(data.trailerUrl);
+            return;
+          }
         }
+        
+        const storedUrl = localStorage.getItem("voxel-hearth-trailer");
+        if (storedUrl) setTrailerUrl(storedUrl);
       } catch (e) {
-        console.error("Firestore read error, falling back to localStorage", e);
+        console.error("Vercel config read error, falling back to localStorage", e);
         const storedUrl = localStorage.getItem("voxel-hearth-trailer");
         if (storedUrl) setTrailerUrl(storedUrl);
       }

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import type { User } from "firebase/auth";
-import { getDbLazy, getAuthLazy } from "../firebase";
+import { getAuthLazy } from "../firebase";
 
 interface AuthContextType {
   user: User | null;
@@ -23,24 +23,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { onAuthStateChanged } = await import("firebase/auth");
       unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
         setUser(currentUser);
-        if (currentUser) {
-          const { doc, getDoc, setDoc } = await import("firebase/firestore");
-          const db = await getDbLazy();
-          const userRef = doc(db, "users", currentUser.uid);
-          const userSnap = await getDoc(userRef);
-          if (!userSnap.exists()) {
-            try {
-              await setDoc(userRef, {
-                uid: currentUser.uid,
-                email: currentUser.email,
-                displayName: currentUser.displayName || "Unknown Operator",
-                role: "user"
-              });
-            } catch (e) {
-              console.error("Error creating user profile", e);
-            }
-          }
-        }
         setLoading(false);
       });
     };

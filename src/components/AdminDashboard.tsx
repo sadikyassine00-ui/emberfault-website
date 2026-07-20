@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { Download, Search, RefreshCw, Layers, Mail, Calendar, Server, Trash2, ArrowLeft, TrendingUp, Users, CheckSquare, Edit2, LogOut, Eye } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Download, Search, RefreshCw, Layers, Mail, Calendar, Server, Trash2, ArrowLeft, TrendingUp, Users, CheckSquare, Edit2, LogOut, Eye, Upload } from "lucide-react";
 import { useUIAudio } from "../hooks/useUIAudio";
 import { useAuth } from "../lib/contexts/AuthContext";
-import { getDbLazy } from "../lib/firebase";
 import { ImageLoader } from "./ImageLoader";
+import { upload } from '@vercel/blob/client';
 
 interface LeadRecord {
   id: string;
@@ -49,41 +49,46 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
   
   const [trailerUrl, setTrailerUrl] = useState("");
   const [heroImageUrl, setHeroImageUrl] = useState("");
+  const [heroImageAlt, setHeroImageAlt] = useState("");
   const [galleryImages, setGalleryImages] = useState<any[]>([]);
   const [editingImageIndex, setEditingImageIndex] = useState<number | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const heroFileInputRef = useRef<HTMLInputElement>(null);
+  const galleryFileInputRef = useRef<HTMLInputElement>(null);
 
   // Form states for gallery items
   const [newImageForm, setNewImageForm] = useState({
     url: "",
     title: "",
     subtitle: "",
-    description: ""
+    description: "",
+    altText: ""
   });
 
-  // Load and seed local storage records and Firestore config
+  // Load and seed local storage records and Vercel Postgres config
   const loadRecords = async () => {
     try {
-      const { collection, getDocs, doc, getDoc } = await import("firebase/firestore");
-      const db = await getDbLazy();
-      const snapshot = await getDocs(collection(db, "leads"));
-      const leads: LeadRecord[] = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as LeadRecord));
+      // Fetch leads
+      const leadsRes = await fetch('/api/leads', { headers: { 'Authorization': 'Bearer admin_token' } });
+      if (leadsRes.ok) {
+        const leads = await leadsRes.json();
+        setRecords(leads);
+      }
       
-      setRecords(leads);
-      
-      const visitsSnap = await getDocs(collection(db, "visits"));
-      setVisitorCount(visitsSnap.docs.length);
+      // Fetch visits
+      const visitsRes = await fetch('/api/visits', { headers: { 'Authorization': 'Bearer admin_token' } });
+      if (visitsRes.ok) {
+        const visits = await visitsRes.json();
+        setVisitorCount(visits.count || 0);
+      }
 
-      // Fetch dynamic configuration from Firestore
-      const docRef = doc(db, "config", "landing");
-      const docSnap = await getDoc(docRef);
-      
-      if (docSnap.exists()) {
-        const data = docSnap.data();
+      // Fetch dynamic configuration from Postgres
+      const configRes = await fetch('/api/config');
+      if (configRes.ok) {
+        const data = await configRes.json();
         if (data.trailerUrl) setTrailerUrl(data.trailerUrl);
         if (data.heroImageUrl) setHeroImageUrl(data.heroImageUrl);
+        if (data.heroImageAlt) setHeroImageAlt(data.heroImageAlt);
         if (data.gallery) setGalleryImages(data.gallery);
       } else {
         // Fallback to localStorage
@@ -92,6 +97,9 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
         
         const storedHeroImage = localStorage.getItem("voxel-hearth-hero-image");
         if (storedHeroImage) setHeroImageUrl(storedHeroImage);
+        
+        const storedHeroAlt = localStorage.getItem("voxel-hearth-hero-alt");
+        if (storedHeroAlt) setHeroImageAlt(storedHeroAlt);
         
         const storedGallery = localStorage.getItem("voxel-hearth-gallery-v2");
         if (storedGallery) {
@@ -108,10 +116,11 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
     }
   };
 
-  const saveConfigToFirestore = async (heroUrl: string, trailer: string, gallery: any[]) => {
+  const saveConfigToVercel = async (heroUrl: string, heroAlt: string, trailer: string, gallery: any[]) => {
     try {
       const payload: any = {};
       if (heroUrl !== undefined) payload.heroImageUrl = heroUrl;
+      if (heroAlt !== undefined) payload.heroImageAlt = heroAlt;
       if (trailer !== undefined) payload.trailerUrl = trailer;
       
       if (gallery !== undefined) {
@@ -128,11 +137,14 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
         });
       }
 
-      const { doc, setDoc } = await import("firebase/firestore");
-      const db = await getDbLazy();
-      const docRef = doc(db, "config", "landing");
-      await setDoc(docRef, payload, { merge: true });
-      return true;
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isAdmin: true, config: payload })
+      });
+      
+      if (res.ok) return true;
+      throw new Error("Failed to save to Vercel Postgres");
     } catch (err) {
       console.error("Failed to save config to Firestore", err);
       showNotice("Database sync error (saved locally only).");
@@ -212,16 +224,36 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
       setGalleryImages(SEED_GALLERY);
       
       localStorage.removeItem("voxel-hearth-hero-image");
+      localStorage.removeItem("voxel-hearth-hero-alt");
       localStorage.removeItem("voxel-hearth-trailer");
       setHeroImageUrl("");
+      setHeroImageAlt("");
       setTrailerUrl("");
 
-      const success = await saveConfigToFirestore("", "", SEED_GALLERY);
+      const success = await saveConfigToVercel("", "", "", SEED_GALLERY);
       if (success) {
         showNotice("Database seeded back to template leads and gallery.");
       }
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleFileUpload = async (file: File): Promise<string | null> => {
+    setIsUploading(true);
+    try {
+      const newBlob = await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: '/api/upload',
+        clientPayload: JSON.stringify({ isAdmin: true })
+      });
+      setIsUploading(false);
+      return newBlob.url;
+    } catch (err) {
+      console.error("Upload failed", err);
+      showNotice("File upload failed. Ensure Vercel Blob is configured.");
+      setIsUploading(false);
+      return null;
     }
   };
 
@@ -232,7 +264,7 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
     } else {
       localStorage.setItem("voxel-hearth-trailer", trailerUrl);
     }
-    const success = await saveConfigToFirestore(heroImageUrl, trailerUrl, galleryImages);
+    const success = await saveConfigToVercel(heroImageUrl, heroImageAlt, trailerUrl, galleryImages);
     if (success) {
       showNotice("Trailer configuration updated.");
     }
@@ -242,10 +274,12 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
     playClick();
     if (!heroImageUrl) {
       localStorage.removeItem("voxel-hearth-hero-image");
+      localStorage.removeItem("voxel-hearth-hero-alt");
     } else {
       localStorage.setItem("voxel-hearth-hero-image", heroImageUrl);
+      localStorage.setItem("voxel-hearth-hero-alt", heroImageAlt);
     }
-    const success = await saveConfigToFirestore(heroImageUrl, trailerUrl, galleryImages);
+    const success = await saveConfigToVercel(heroImageUrl, heroImageAlt, trailerUrl, galleryImages);
     if (success) {
       showNotice("Hero media configuration updated.");
     }
@@ -264,8 +298,8 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
       const updated = [...galleryImages, newImg];
       setGalleryImages(updated);
       localStorage.setItem("voxel-hearth-gallery-v2", JSON.stringify(updated));
-      setNewImageForm({ url: "", title: "", subtitle: "", description: "" });
-      const success = await saveConfigToFirestore(heroImageUrl, trailerUrl, updated);
+      setNewImageForm({ url: "", title: "", subtitle: "", description: "", altText: "" });
+      const success = await saveConfigToVercel(heroImageUrl, trailerUrl, updated);
       if (success) {
         showNotice("Image added to gallery.");
       }
@@ -288,9 +322,9 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
       updated[editingImageIndex] = { ...newImageForm, url: newImageForm.url.trim() };
       setGalleryImages(updated);
       localStorage.setItem("voxel-hearth-gallery-v2", JSON.stringify(updated));
-      setNewImageForm({ url: "", title: "", subtitle: "", description: "" });
+      setNewImageForm({ url: "", title: "", subtitle: "", description: "", altText: "" });
       setEditingImageIndex(null);
-      const success = await saveConfigToFirestore(heroImageUrl, trailerUrl, updated);
+      const success = await saveConfigToVercel(heroImageUrl, trailerUrl, updated);
       if (success) {
         showNotice("Image updated in gallery.");
       }
@@ -312,7 +346,7 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
       updated.splice(index, 1);
       setGalleryImages(updated);
       localStorage.setItem("voxel-hearth-gallery-v2", JSON.stringify(updated));
-      const success = await saveConfigToFirestore(heroImageUrl, trailerUrl, updated);
+      const success = await saveConfigToVercel(heroImageUrl, trailerUrl, updated);
       if (success) {
         showNotice("Image removed from gallery.");
       }
@@ -490,19 +524,48 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
             
             <div className="bg-bedrock p-4 border border-neutral-900 rounded-sm space-y-4">
               <h3 className="text-[10px] text-zinc-400 font-mono tracking-widest uppercase">Hero Background Media</h3>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    placeholder="Image URL or GIF URL..."
+                    value={heroImageUrl}
+                    onChange={(e) => setHeroImageUrl(e.target.value)}
+                    className="flex-grow bg-void border border-neutral-800 text-zinc-200 text-xs py-2 px-3 rounded-sm font-mono outline-none focus:border-slate-700"
+                  />
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    ref={heroFileInputRef}
+                    className="hidden"
+                    onChange={async (e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        const url = await handleFileUpload(e.target.files[0]);
+                        if (url) setHeroImageUrl(url);
+                      }
+                    }}
+                  />
+                  <button 
+                    onClick={() => heroFileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="bg-neutral-800 hover:bg-neutral-700 text-white font-bold text-xs px-3 rounded-sm tracking-wider uppercase transition flex items-center justify-center disabled:opacity-50"
+                    title="Upload Local File"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                  </button>
+                </div>
                 <input 
                   type="text" 
-                  placeholder="Image URL or GIF URL..."
-                  value={heroImageUrl}
-                  onChange={(e) => setHeroImageUrl(e.target.value)}
-                  className="flex-grow bg-void border border-neutral-800 text-zinc-200 text-xs py-2 px-3 rounded-sm font-mono outline-none focus:border-slate-700"
+                  placeholder="Alt Text (SEO Description)..."
+                  value={heroImageAlt}
+                  onChange={(e) => setHeroImageAlt(e.target.value)}
+                  className="w-full bg-void border border-neutral-800 text-zinc-200 text-xs py-2 px-3 rounded-sm font-mono outline-none focus:border-slate-700"
                 />
                 <button 
                   onClick={handleSaveHeroImage}
-                  className="bg-hearth-gold hover:bg-hearth-amber text-black font-bold text-xs px-4 rounded-sm tracking-wider uppercase transition"
+                  className="bg-hearth-gold hover:bg-hearth-amber text-black font-bold text-xs px-4 py-2 mt-1 rounded-sm tracking-wider uppercase transition self-end"
                 >
-                  Save
+                  Save Hero Config
                 </button>
               </div>
             </div>
@@ -511,11 +574,40 @@ export function AdminDashboard({ onBackToLanding }: AdminDashboardProps) {
           <div className="bg-bedrock p-4 border border-neutral-900 rounded-sm space-y-4">
             <h3 className="text-[10px] text-zinc-400 font-mono tracking-widest uppercase">Gallery Images ({galleryImages.length})</h3>
             <div className="flex flex-col gap-2 mb-4">
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  placeholder="Image URL..."
+                  value={newImageForm.url}
+                  onChange={(e) => setNewImageForm({...newImageForm, url: e.target.value})}
+                  className="flex-grow bg-void border border-neutral-800 text-zinc-200 text-xs py-2 px-3 rounded-sm font-mono outline-none focus:border-slate-700"
+                />
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  ref={galleryFileInputRef}
+                  className="hidden"
+                  onChange={async (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      const url = await handleFileUpload(e.target.files[0]);
+                      if (url) setNewImageForm({...newImageForm, url});
+                    }
+                  }}
+                />
+                <button 
+                  onClick={() => galleryFileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="bg-neutral-800 hover:bg-neutral-700 text-white font-bold text-xs px-3 rounded-sm tracking-wider uppercase transition flex items-center justify-center disabled:opacity-50"
+                  title="Upload Local File"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                </button>
+              </div>
               <input 
                 type="text" 
-                placeholder="Image URL..."
-                value={newImageForm.url}
-                onChange={(e) => setNewImageForm({...newImageForm, url: e.target.value})}
+                placeholder="Alt Text (SEO Description)..."
+                value={newImageForm.altText || ""}
+                onChange={(e) => setNewImageForm({...newImageForm, altText: e.target.value})}
                 className="w-full bg-void border border-neutral-800 text-zinc-200 text-xs py-2 px-3 rounded-sm font-mono outline-none focus:border-slate-700"
               />
               <div className="flex gap-2">

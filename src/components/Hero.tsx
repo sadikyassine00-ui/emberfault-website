@@ -13,7 +13,6 @@ import {
 import { useUIAudio } from "../hooks/useUIAudio";
 import { motion, AnimatePresence } from "motion/react";
 import { SuccessModal } from "./SuccessModal";
-import { getDbLazy } from "../lib/firebase";
 import { ImageLoader } from "./ImageLoader";
 
 function FloatingSkull({ initialDelay }: { initialDelay: number }) {
@@ -114,24 +113,28 @@ export function Hero({ onWatchTrailer, onJoinAlpha }: HeroProps) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorStatus, setErrorStatus] = useState("");
   const [heroMediaUrl, setHeroMediaUrl] = useState("");
+  const [heroImageAlt, setHeroImageAlt] = useState("");
 
   useEffect(() => {
     const fetchHeroMedia = async () => {
       try {
-        const { doc, getDoc } = await import("firebase/firestore");
-        const db = await getDbLazy();
-        const docRef = doc(db, "config", "landing");
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && docSnap.data().heroImageUrl !== undefined) {
-          setHeroMediaUrl(docSnap.data().heroImageUrl);
+        const res = await fetch('/api/config');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.heroImageUrl) setHeroMediaUrl(data.heroImageUrl);
+          if (data.heroImageAlt) setHeroImageAlt(data.heroImageAlt);
         } else {
           const stored = localStorage.getItem("voxel-hearth-hero-image");
           if (stored) setHeroMediaUrl(stored);
+          const storedAlt = localStorage.getItem("voxel-hearth-hero-alt");
+          if (storedAlt) setHeroImageAlt(storedAlt);
         }
       } catch (e) {
-        console.error("Firestore read error, falling back to localStorage", e);
+        console.error("Vercel config read error, falling back to localStorage", e);
         const stored = localStorage.getItem("voxel-hearth-hero-image");
         if (stored) setHeroMediaUrl(stored);
+        const storedAlt = localStorage.getItem("voxel-hearth-hero-alt");
+        if (storedAlt) setHeroImageAlt(storedAlt);
       }
     };
     fetchHeroMedia();
@@ -147,16 +150,18 @@ export function Hero({ onWatchTrailer, onJoinAlpha }: HeroProps) {
     }
 
     try {
-      // 1. Write to official Firebase Firestore database "leads" collection
-      const { collection, addDoc } = await import("firebase/firestore");
-      const db = await getDbLazy();
-      await addDoc(collection(db, "leads"), {
-        email: email.trim(),
-        platform: "PC // STEAM",
-        subscribedToNewsletter: true,
-        date: new Date().toISOString(),
-        source: "Hero Direct Hook",
+      // 1. Write to official Neon Postgres database "leads" table via API
+      const res = await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          platform: "PC // STEAM",
+          source: "Hero Direct Hook",
+        })
       });
+
+      if (!res.ok) throw new Error("API Response not ok");
 
       // 2. Also save submission to localStorage so it is available as a local backup
       const existing = localStorage.getItem("voxel-hearth-emails");
@@ -236,25 +241,16 @@ export function Hero({ onWatchTrailer, onJoinAlpha }: HeroProps) {
       >
         {/* LEFT COLUMN: Text & CTAs */}
         <div className="flex flex-col items-center md:items-start text-center md:text-left order-1 md:order-1 w-full pointer-events-none">
-          {/* Status indicator pill */}
-          <motion.div
-            variants={itemVariants}
-            className="inline-flex items-center gap-2 px-3 py-1 bg-bedrock border border-neutral-800 rounded-sm mb-6 shadow-sm relative overflow-hidden group"
-          >
-            <span className="w-2 h-2 bg-hearth-gold rounded-full group-hover:animate-ping" />
-            <span className="text-[9px] sm:text-[10px] font-mono tracking-wider sm:tracking-widest uppercase text-zinc-400">
-              ISOMETRIC SWARM ACTION // NOW ENLISTING PLAYTESTERS
-            </span>
-          </motion.div>
+
 
           {/* Impact Headline */}
           <motion.h1
             variants={itemVariants}
-            className="font-display font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.05] tracking-tight uppercase max-w-3xl mb-6"
+            className="font-display font-black text-3xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-6xl leading-[1.05] tracking-tight uppercase max-w-4xl mb-6"
           >
-            <span className="text-white font-black">NO GROUND </span>
+            <span className="text-white font-black">SHATTER THE EARTH. </span>
             <span className="text-hearth-gold drop-shadow-[0_0_15px_rgba(250,204,21,0.4)]">
-              IS SAFE
+              SURVIVE THE NIGHT.
             </span>
           </motion.h1>
 
@@ -263,7 +259,7 @@ export function Hero({ onWatchTrailer, onJoinAlpha }: HeroProps) {
             variants={itemVariants}
             className="font-sans text-sm md:text-base text-zinc-400 max-w-xl leading-relaxed mb-8 md:mb-10"
           >
-            Emberfault is an isometric swarm action game with 100% destructible voxel terrain. Carve paths through the earth, shatter the floor beneath the horde, and weaponize physics with an iron hammer.
+            EMBERFAULT is a high-octane, 3D voxel action roguelike where every block is fully destructible. Risk it all extracting rare materials from collapsing floating islands by day, and throw yourself in front of a relentless monster swarm by night.
           </motion.p>
 
           {/* Integrated Conversion CTA */}
@@ -315,7 +311,7 @@ export function Hero({ onWatchTrailer, onJoinAlpha }: HeroProps) {
             <div className="absolute inset-0 bg-gradient-to-tr from-[#070709]/40 via-transparent to-swarm-purple/10 z-10 pointer-events-none mix-blend-overlay" />
             <ImageLoader
               src={heroMediaUrl}
-              alt="Emberfault Pre-alpha capture"
+              alt={heroImageAlt || "Emberfault Pre-alpha capture"}
               loading="eager"
               decoding="async"
               fetchPriority="high"

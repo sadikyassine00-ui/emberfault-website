@@ -1,5 +1,4 @@
 import React, { useState, useEffect, FormEvent, useCallback, useRef } from "react";
-import { getDbLazy } from "./lib/firebase";
 import { AuthProvider } from "./lib/contexts/AuthContext";
 import { Navbar } from "./components/Navbar";
 import { Hero } from "./components/Hero";
@@ -40,12 +39,13 @@ export default function App() {
     const recordVisit = async () => {
       try {
         if (!sessionStorage.getItem('voxel_hearth_visited')) {
-          const { collection, addDoc } = await import("firebase/firestore");
-          const db = await getDbLazy();
-          await addDoc(collection(db, "visits"), {
-            date: new Date().toISOString(),
-            platform: navigator.platform || "Unknown",
-            userAgent: navigator.userAgent
+          await fetch('/api/visits', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              path: window.location.pathname,
+              userAgent: navigator.userAgent
+            })
           });
           sessionStorage.setItem('voxel_hearth_visited', 'true');
         }
@@ -105,16 +105,17 @@ export default function App() {
     }
 
     try {
-      const newRecord = {
-        email: incentiveEmail.trim(),
-        date: new Date().toISOString(),
-        source: "Final CTA Incentive",
-        platform: "PC // STEAM"
-      };
+      const res = await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: incentiveEmail.trim(),
+          source: "Final CTA Incentive",
+          platform: "PC // STEAM"
+        })
+      });
 
-      const { collection, addDoc } = await import("firebase/firestore");
-      const db = await getDbLazy();
-      await addDoc(collection(db, "leads"), newRecord);
+      if (!res.ok) throw new Error("Network delay");
 
       setIsIncentiveSubmitted(true);
       setIncentiveError("");

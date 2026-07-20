@@ -2,8 +2,6 @@ import { useState, FormEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Check, Mail, Gamepad, Radio, HelpCircle } from "lucide-react";
 import { WishlistSubmission } from "../types";
-import { getDbLazy } from "../lib/firebase";
-
 interface WishlistModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -35,15 +33,21 @@ export function WishlistModal({ isOpen, onClose, type }: WishlistModalProps) {
     setError("");
     
     try {
-      const { collection, addDoc } = await import("firebase/firestore");
-      const db = await getDbLazy();
-      await addDoc(collection(db, "leads"), {
-        email: email.trim(),
-        platform: platform,
-        subscribedToNewsletter: newsletter,
-        date: new Date().toISOString(),
-        source: type === "alpha" ? "Wishlist Modal Alpha" : "Wishlist Modal",
+      const res = await fetch('/api/leads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          source: type === "alpha" ? "Wishlist Modal Alpha" : "Wishlist Modal",
+          platform: platform,
+        }),
       });
+      
+      if (!res.ok) {
+        throw new Error("Network response was not ok");
+      }
 
       setSubmitted(true);
     } catch (err) {

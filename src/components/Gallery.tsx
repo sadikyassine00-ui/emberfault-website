@@ -2,7 +2,6 @@ import { useState, useEffect, ReactNode } from "react";
 import { Maximize2, Zap, Compass, Flame, ShieldAlert, Sparkles, X, Swords, Star } from "lucide-react";
 import { useUIAudio } from "../hooks/useUIAudio";
 import { motion } from "motion/react";
-import { getDbLazy } from "../lib/firebase";
 import { ImageLoader } from "./ImageLoader";
 
 interface MediaItem {
@@ -33,23 +32,24 @@ export function Gallery() {
       ];
 
       try {
-        const { doc, getDoc } = await import("firebase/firestore");
-        const db = await getDbLazy();
-        const docRef = doc(db, "config", "landing");
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && docSnap.data().gallery !== undefined) {
-          setCustomImages(docSnap.data().gallery);
-        } else {
-          const stored = localStorage.getItem("voxel-hearth-gallery-v2");
+        const res = await fetch('/api/config');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.gallery !== undefined) {
+            setCustomImages(data.gallery);
+            return;
+          }
+        }
+        
+        const stored = localStorage.getItem("voxel-hearth-gallery-v2");
           if (stored) {
             setCustomImages(JSON.parse(stored));
           } else {
             localStorage.setItem("voxel-hearth-gallery-v2", JSON.stringify(seedData));
             setCustomImages(seedData);
           }
-        }
       } catch (err) {
-        console.error("Firestore read error, falling back to localStorage", err);
+        console.error("Vercel config read error, falling back to localStorage", err);
         const stored = localStorage.getItem("voxel-hearth-gallery-v2");
         if (stored) {
           setCustomImages(JSON.parse(stored));
@@ -199,7 +199,7 @@ export function Gallery() {
         <div className="w-full h-full bg-[#0d0d10] relative flex items-center justify-center overflow-hidden border border-neutral-900">
           <ImageLoader
             src={img.url}
-            alt={img.title || `Custom upload ${index}`}
+            alt={img.altText || img.title || `Custom upload ${index}`}
             loading="lazy"
             decoding="async"
             theme={img.category === "Combat" ? "purple" : img.category === "Destruction" ? "amber" : "gold"}
@@ -255,7 +255,7 @@ export function Gallery() {
           </h2>
         </div>
         <p className="max-w-md text-xs text-zinc-400 font-mono leading-relaxed border-l-2 border-neutral-800 pl-4">
-          Witness high-intensity destruction loops and vibrant ambient lights shining through dark subterranean pits. Expand any frame to inspect the battlefield.
+          Experience high-octane combat, total terrain destruction, and strategic fortress building. Expand any frame to inspect the battlefield.
         </p>
       </motion.div>
 

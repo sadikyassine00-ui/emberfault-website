@@ -73,7 +73,7 @@ export function Navbar({ onWishlistClick }: NavbarProps) {
           </a>
         </nav>
 
-        {/* Action Controls */}
+        {/* Action Controls - Disabled until Steam page is live
         <div className="hidden sm:flex items-center gap-4">
           <button
             onClick={() => {
@@ -89,6 +89,7 @@ export function Navbar({ onWishlistClick }: NavbarProps) {
             <span>Wishlist Now</span>
           </button>
         </div>
+        */}
 
         {/* Mobile Hamburger toggle controls */}
         <div className="flex items-center gap-3 md:hidden">
@@ -140,6 +141,7 @@ export function Navbar({ onWishlistClick }: NavbarProps) {
             </a>
           </nav>
 
+          {/* Action Controls - Disabled until Steam page is live
           <button
             onClick={() => {
               playClick();
@@ -154,6 +156,7 @@ export function Navbar({ onWishlistClick }: NavbarProps) {
             </div>
             <span>Wishlist Now</span>
           </button>
+          */}
         </div>
       )}
     </header>
