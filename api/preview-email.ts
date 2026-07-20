@@ -6,8 +6,9 @@ export default async function handler(req: any, res: any) {
     return res.status(405).send('Method Not Allowed');
   }
 
-  // Pass a mock email to render
-  const html = renderWelcomeEmail('commander@vanguard.net');
+  // Allow the user to specify an email to preview, defaulting to a mock email if none is provided
+  const targetEmail = req.query?.email || 'commander@vanguard.net';
+  const html = renderWelcomeEmail(targetEmail);
 
   // Return the raw HTML to preview directly in the browser
   return res.status(200).send(html);
