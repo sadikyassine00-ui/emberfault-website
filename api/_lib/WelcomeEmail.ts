@@ -1,7 +1,7 @@
 export function renderWelcomeEmail(email: string): string {
-  const unsubscribeUrl = \`https://emberfault.com/api/unsubscribe?email=\${encodeURIComponent(email)}\`;
+  const unsubscribeUrl = `https://emberfault.com/api/unsubscribe?email=${encodeURIComponent(email)}`;
 
-  return \`
+  return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -142,7 +142,7 @@ export function renderWelcomeEmail(email: string): string {
         <div class="content">
           <div class="status-box">
             <p class="status-text">> RECORD ESTABLISHED</p>
-            <p class="status-text" style="color: #a1a1aa; font-size: 12px; margin-top: 4px;">> ENLISTED: \${email}</p>
+            <p class="status-text" style="color: #a1a1aa; font-size: 12px; margin-top: 4px;">> ENLISTED: ${email}</p>
           </div>
 
           <div class="message">
@@ -173,11 +173,11 @@ export function renderWelcomeEmail(email: string): string {
           <p>TRANSMISSION ORIGIN: EMBERFAULT HQ</p>
           <p>This is an automated message. You received this uplink because you registered your beacon at emberfault.com.</p>
           <p style="margin-top: 16px;">
-            <a href="\${unsubscribeUrl}">Disconnect Comm Link (Unsubscribe)</a>
+            <a href="${unsubscribeUrl}">Disconnect Comm Link (Unsubscribe)</a>
           </p>
         </div>
       </div>
     </body>
     </html>
-  \`;
+  `;
 }

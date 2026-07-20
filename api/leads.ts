@@ -1,6 +1,6 @@
 import { neon } from '@neondatabase/serverless';
 import { Resend } from 'resend';
-import { renderWelcomeEmail } from './WelcomeEmail.js';
+import { renderWelcomeEmail } from './_lib/WelcomeEmail.js';
 
 let resend: any = null;
 if (process.env.RESEND_API_KEY) {
