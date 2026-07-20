@@ -17,7 +17,7 @@ export function renderWelcomeEmail(email: string): string {
           background-color: #050505;
           /* Faint Skull Pattern */
           background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 15c-4.4 0-8 3.6-8 8 0 3.5 2.2 6.5 5.4 7.6v3.4h5.2v-3.4c3.2-1.1 5.4-4.1 5.4-7.6 0-4.4-3.6-8-8-8zm-3 9.6c-.9 0-1.6-.7-1.6-1.6 0-.9.7-1.6 1.6-1.6.9 0 1.6.7 1.6 1.6 0 .9-.7 1.6-1.6 1.6zm6 0c-.9 0-1.6-.7-1.6-1.6 0-.9.7-1.6 1.6-1.6.9 0 1.6.7 1.6 1.6 0 .9-.7 1.6-1.6 1.6z' fill='%23121214' fill-opacity='0.8' fill-rule='evenodd'/%3E%3C/svg%3E");
-          color: #d4d4d8;
+          color: #ffffff; /* Changed to stark white for readability */
           font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
           line-height: 1.6;
         }
@@ -71,10 +71,19 @@ export function renderWelcomeEmail(email: string): string {
           text-transform: uppercase;
           letter-spacing: 1px;
         }
+        
+        .status-text-muted {
+          color: #e4e4e7; /* Brighter gray */
+          font-size: 12px;
+          margin-top: 4px;
+          font-weight: bold;
+          text-transform: uppercase;
+        }
 
         .message {
           margin-bottom: 24px;
           font-size: 14px;
+          color: #ffffff;
         }
 
         .message p {
@@ -120,12 +129,12 @@ export function renderWelcomeEmail(email: string): string {
           border-top: 1px solid #27272a;
           padding: 24px;
           text-align: center;
-          font-size: 11px;
-          color: #71717a;
+          font-size: 12px;
+          color: #a1a1aa; /* Increased contrast slightly */
         }
         
         .footer a {
-          color: #a1a1aa;
+          color: #d4d4d8; /* Brighter link color */
           text-decoration: underline;
         }
       </style>
@@ -142,7 +151,7 @@ export function renderWelcomeEmail(email: string): string {
         <div class="content">
           <div class="status-box">
             <p class="status-text">> RECORD ESTABLISHED</p>
-            <p class="status-text" style="color: #a1a1aa; font-size: 12px; margin-top: 4px;">> ENLISTED: ${email}</p>
+            <p class="status-text-muted">> ENLISTED: ${email}</p>
           </div>
 
           <div class="message">
@@ -163,17 +172,17 @@ export function renderWelcomeEmail(email: string): string {
             </a>
           </div>
 
-          <div class="message" style="text-align: center; font-size: 13px; color: #a1a1aa; font-weight: bold;">
+          <div class="message" style="text-align: center; font-size: 13px; color: #e4e4e7; font-weight: bold;">
             <p>PREPARE TO SHATTER THE EARTH.<br>SURVIVE THE NIGHT.</p>
           </div>
         </div>
 
         <!-- Footer -->
         <div class="footer">
-          <p>TRANSMISSION ORIGIN: EMBERFAULT HQ</p>
-          <p>This is an automated message. You received this uplink because you registered your beacon at emberfault.com.</p>
+          <p>EMBERFAULT</p>
+          <p>This is an automated message. You received this because you signed up for updates at emberfault.com.</p>
           <p style="margin-top: 16px;">
-            <a href="${unsubscribeUrl}">Disconnect Comm Link (Unsubscribe)</a>
+            <a href="${unsubscribeUrl}">Unsubscribe</a>
           </p>
         </div>
       </div>

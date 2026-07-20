@@ -43,7 +43,7 @@ export default async function handler(req: any, res: any) {
         try {
           // You must verify your domain in Resend and change this from address
           await resend.emails.send({
-            from: 'Emberfault Vanguard <hq@emberfault.com>',
+            from: 'EMBERFAULT <hello@emberfault.com>',
             to: email,
             subject: 'EMBERFAULT // Registration Confirmed',
             html: renderWelcomeEmail(email),
