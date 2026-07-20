@@ -1,4 +1,8 @@
 import { neon } from '@neondatabase/serverless';
+import { Resend } from 'resend';
+import { renderWelcomeEmail } from '../src/emails/WelcomeEmail';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export default async function handler(req: any, res: any) {
   const sql = neon(process.env.DATABASE_URL!);
@@ -30,6 +34,22 @@ export default async function handler(req: any, res: any) {
         VALUES (${email}, ${source || ''}, ${platform || ''})
         ON CONFLICT (email) DO NOTHING
       `;
+
+      // Trigger Welcome Email async
+      if (process.env.RESEND_API_KEY) {
+        try {
+          // You must verify your domain in Resend and change this from address
+          await resend.emails.send({
+            from: 'Emberfault Vanguard <hq@emberfault.com>',
+            to: email,
+            subject: 'EMBERFAULT // Alpha Registration Confirmed',
+            html: renderWelcomeEmail(email),
+          });
+        } catch (emailError) {
+          console.error("Failed to send welcome email:", emailError);
+          // We don't fail the whole request if the email fails
+        }
+      }
       
       return res.status(200).json({ success: true });
     } catch (e: any) {
