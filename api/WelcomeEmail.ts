@@ -1,5 +1,7 @@
 export function renderWelcomeEmail(email: string): string {
-  return `
+  const unsubscribeUrl = \`https://emberfault.com/api/unsubscribe?email=\${encodeURIComponent(email)}\`;
+
+  return \`
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -11,8 +13,10 @@ export function renderWelcomeEmail(email: string): string {
         
         body {
           margin: 0;
-          padding: 0;
-          background-color: #09090b;
+          padding: 40px 20px;
+          background-color: #050505;
+          /* Faint Skull Pattern */
+          background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 15c-4.4 0-8 3.6-8 8 0 3.5 2.2 6.5 5.4 7.6v3.4h5.2v-3.4c3.2-1.1 5.4-4.1 5.4-7.6 0-4.4-3.6-8-8-8zm-3 9.6c-.9 0-1.6-.7-1.6-1.6 0-.9.7-1.6 1.6-1.6.9 0 1.6.7 1.6 1.6 0 .9-.7 1.6-1.6 1.6zm6 0c-.9 0-1.6-.7-1.6-1.6 0-.9.7-1.6 1.6-1.6.9 0 1.6.7 1.6 1.6 0 .9-.7 1.6-1.6 1.6z' fill='%23121214' fill-opacity='0.8' fill-rule='evenodd'/%3E%3C/svg%3E");
           color: #d4d4d8;
           font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
           line-height: 1.6;
@@ -21,8 +25,9 @@ export function renderWelcomeEmail(email: string): string {
         .container {
           max-width: 600px;
           margin: 0 auto;
-          background-color: #0d0d10;
+          background-color: rgba(13, 13, 16, 0.95);
           border: 1px solid #27272a;
+          box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
         }
 
         .header {
@@ -43,6 +48,7 @@ export function renderWelcomeEmail(email: string): string {
           font-size: 12px;
           letter-spacing: 4px;
           margin-top: 8px;
+          font-weight: 800;
         }
 
         .content {
@@ -74,9 +80,20 @@ export function renderWelcomeEmail(email: string): string {
         .message p {
           margin: 0 0 16px 0;
         }
+        
+        .message strong {
+          color: #ffffff;
+        }
 
         .highlight {
           color: #eab308;
+        }
+        
+        .section-title {
+          color: #a855f7;
+          font-weight: bold;
+          text-transform: uppercase;
+          margin-right: 8px;
         }
 
         .cta-container {
@@ -106,6 +123,11 @@ export function renderWelcomeEmail(email: string): string {
           font-size: 11px;
           color: #71717a;
         }
+        
+        .footer a {
+          color: #a1a1aa;
+          text-decoration: underline;
+        }
       </style>
     </head>
     <body>
@@ -120,14 +142,19 @@ export function renderWelcomeEmail(email: string): string {
         <div class="content">
           <div class="status-box">
             <p class="status-text">> RECORD ESTABLISHED</p>
-            <p class="status-text" style="color: #a1a1aa; font-size: 12px; margin-top: 4px;">> ENLISTED: ${email}</p>
+            <p class="status-text" style="color: #a1a1aa; font-size: 12px; margin-top: 4px;">> ENLISTED: \${email}</p>
           </div>
 
           <div class="message">
-            <p>Welcome to the depths,</p>
-            <p>You have successfully registered to receive updates for <span class="highlight">Emberfault</span>.</p>
-            <p>Emberfault is a grimcute action roguelike where you battle through subterranean swarms, master chaotic destruction, and rebuild the central hearths. We are pouring everything into making the combat intense and the world engaging.</p>
-            <p>Stay tuned! We'll reach out on this comms channel to send you development updates, behind-the-scenes previews, and ultimately, news on exactly when our Alpha will drop.</p>
+            <p style="font-size: 16px; font-weight: bold; color: white;">You're in.</p>
+            <p>Welcome to EMBERFAULT.</p>
+            <p>Think cute voxel blocks, heavy hammers, and absolute doom.</p>
+            
+            <p><span class="section-title">Day:</span> Mine collapsing floating islands. Stay too long, you lose it all.</p>
+            <p><span class="section-title">Night:</span> Smash the floor out from under a monster swarm before they break your core.</p>
+            
+            <p>No run is wasted. Build the base camp, get stronger, try again.</p>
+            <p>Next alpha test keys drop right here. Watch your back.</p>
           </div>
 
           <div class="cta-container">
@@ -136,18 +163,21 @@ export function renderWelcomeEmail(email: string): string {
             </a>
           </div>
 
-          <div class="message" style="font-size: 12px; color: #a1a1aa;">
-            <p>> PREPARE TO SHATTER THE EARTH.<br>> SURVIVE THE NIGHT.</p>
+          <div class="message" style="text-align: center; font-size: 13px; color: #a1a1aa; font-weight: bold;">
+            <p>PREPARE TO SHATTER THE EARTH.<br>SURVIVE THE NIGHT.</p>
           </div>
         </div>
 
         <!-- Footer -->
         <div class="footer">
           <p>TRANSMISSION ORIGIN: EMBERFAULT HQ</p>
-          <p>You received this uplink because you registered your beacon at emberfault.com</p>
+          <p>This is an automated message. You received this uplink because you registered your beacon at emberfault.com.</p>
+          <p style="margin-top: 16px;">
+            <a href="\${unsubscribeUrl}">Disconnect Comm Link (Unsubscribe)</a>
+          </p>
         </div>
       </div>
     </body>
     </html>
-  `;
+  \`;
 }
