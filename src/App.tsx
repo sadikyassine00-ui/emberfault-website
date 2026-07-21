@@ -321,7 +321,7 @@ export default function App() {
 
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto mt-4 md:mt-0">
               <a
-                href="https://discord.gg"
+                href="https://discord.gg/rXdWFb75x"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={playClick}
@@ -355,7 +355,7 @@ export default function App() {
           {/* Social Links */}
           <div className="flex gap-4">
             <a
-              href="https://discord.com"
+              href="https://discord.gg/rXdWFb75x"
               target="_blank"
               rel="noopener noreferrer"
               onClick={playClick}

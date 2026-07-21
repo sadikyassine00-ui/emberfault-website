@@ -9,6 +9,9 @@ import {
   CheckCircle2,
   Gamepad,
   Skull,
+  Hammer,
+  Swords,
+  Layers,
 } from "lucide-react";
 import { useUIAudio } from "../hooks/useUIAudio";
 import { motion, AnimatePresence } from "motion/react";
@@ -331,16 +334,16 @@ export function Hero({ onWatchTrailer, onJoinAlpha }: HeroProps) {
           className="hidden md:flex col-span-1 md:col-span-2 order-2 md:order-3 gap-12 mt-4 md:mt-12 border-t border-neutral-900 pt-8 w-full justify-center text-[10px] sm:text-xs font-mono text-zinc-500 uppercase tracking-wider relative"
         >
           <div className="flex items-center gap-2.5">
-            <Cpu className="w-4 h-4 text-hearth-gold animate-bounce" />
-            <span>Fully Destructible Landscapes</span>
+            <Layers className="w-4 h-4 text-hearth-gold animate-bounce" />
+            <span>Layered Terrain Shattering</span>
           </div>
           <div className="flex items-center gap-2.5">
-            <ShieldAlert className="w-4 h-4 text-swarm-purple" />
-            <span>Relentless Dynamic Horde</span>
+            <Skull className="w-4 h-4 text-swarm-purple" />
+            <span>Split-Threat Swarm AI</span>
           </div>
           <div className="flex items-center gap-2.5">
-            <Terminal className="w-4 h-4 text-hearth-amber" />
-            <span>Striking Dark Cave Illumination</span>
+            <Hammer className="w-4 h-4 text-hearth-amber" />
+            <span>Heavy-Impact Melee</span>
           </div>
         </motion.div>
       </motion.div>
