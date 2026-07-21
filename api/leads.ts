@@ -28,8 +28,9 @@ export default async function handler(req: any, res: any) {
     try {
       const { email, source, platform } = req.body;
       
-      if (!email) {
-        return res.status(400).json({ error: 'Email is required' });
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email)) {
+        return res.status(400).json({ error: 'Valid email is required' });
       }
       
       await sql`
